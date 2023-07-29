@@ -9,7 +9,6 @@ const int COLORS_PER_BOTTLE = 4;
 
 
 struct Bottle {
-    int id;
     Color colors[COLORS_PER_BOTTLE];
 };
 
@@ -35,7 +34,7 @@ void printBottles(std::vector<Bottle> bottles) {
     std::cout << "Bottles: " << std::endl;
     for (int i = 0; i < bottles.size(); i++) {
         Bottle bottle = bottles[i];
-        printf("%u: %u, %u, %u, %u\n", bottle.id, bottle.colors[0], bottle.colors[1], bottle.colors[2], bottle.colors[3]);
+        printf("%u: %u, %u, %u, %u\n", i, bottle.colors[0], bottle.colors[1], bottle.colors[2], bottle.colors[3]);
     }
 }
 
