@@ -30,7 +30,7 @@ void printPerms(std::vector<Move> indicesPermutations) {
     }
 }
 
-void printBottles(std::vector<Bottle> bottles) {
+void printBottles(const std::vector<Bottle>& bottles) {
     std::cout << "Bottles: " << std::endl;
     for (int i = 0; i < bottles.size(); i++) {
         Bottle bottle = bottles[i];
@@ -101,7 +101,7 @@ std::optional<Color> getFirstColorOfBottle(Bottle bottle) {
     return firstColor;
 }
 
-std::vector<Move> getPossibleMoves(std::vector<Bottle> bottles) {
+std::vector<Move> getPossibleMoves(const std::vector<Bottle>& bottles) {
     std::vector<Move> indicesPermutations;
 
     int bottleCount = bottles.size();
