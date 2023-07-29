@@ -13,17 +13,20 @@ struct Bottle {
     Color colors[COLORS_PER_BOTTLE];
 };
 
+struct Move {
+    int fromID;
+    int toID;
+};
+
 void swap(int &a, int &b) {
     int temp = a;
     a = b;
     b = temp;
 }
 
-void printPerms(std::vector<std::array<int, 2>> indicesPermutations) {
+void printPerms(std::vector<Move> indicesPermutations) {
     for (int i = 0; i < indicesPermutations.size(); i++) {
-        for (int j = 0; j < 2; j++) {
-            std::cout << indicesPermutations[i][j] << " ";
-        }
+        std::cout << indicesPermutations[i].fromID << " " << indicesPermutations[i].toID;
         std::cout << std::endl;
     }
 }
@@ -36,9 +39,9 @@ void printBottles(std::vector<Bottle> bottles) {
     }
 }
 
-bool vectorContains(std::vector<std::array<int, 2>> vector, std::array<int, 2> element) {
+bool vectorContains(std::vector<Move> vector, Move move) {
     for (int i = 0; i < vector.size(); i++) {
-        if (vector[i][0] == element[0] && vector[i][1] == element[1])
+        if (vector[i].fromID == move.fromID && vector[i].toID == move.toID)
             return true;
     }
     return false;
@@ -46,15 +49,11 @@ bool vectorContains(std::vector<std::array<int, 2>> vector, std::array<int, 2> e
 
 // https://www.geeksforgeeks.org/heaps-algorithm-for-generating-permutations/#
 // Generating permutation using Heap Algorithm
-void heapPermutation(std::vector<std::array<int, 2>> *indicesPermutations, int array[], int size) {
+void heapPermutation(std::vector<Move> *indicesPermutations, int array[], int size) {
     // if size becomes 1 then prints the obtained
     // permutation
     if (size == 1) {
-        std::array<int, 2> outputPermutations{};
-
-        for (int i = 0; i < 2; i++) {
-            outputPermutations[i] = array[i];
-        }
+        Move outputPermutations{array[0], array[1]};
 
         if (!vectorContains(*indicesPermutations, outputPermutations)) {
             indicesPermutations->push_back(outputPermutations);
@@ -103,8 +102,8 @@ std::optional<Color> getFirstColorOfBottle(Bottle bottle) {
     return firstColor;
 }
 
-std::vector<std::array<int, 2>> getPossibleMoves(std::vector<Bottle> bottles) {
-    std::vector<std::array<int, 2>> indicesPermutations;
+std::vector<Move> getPossibleMoves(std::vector<Bottle> bottles) {
+    std::vector<Move> indicesPermutations;
 
     int bottleCount = bottles.size();
 
@@ -116,27 +115,21 @@ std::vector<std::array<int, 2>> getPossibleMoves(std::vector<Bottle> bottles) {
     heapPermutation(&indicesPermutations, listOfIndices, bottleCount);
 
     for (int i = indicesPermutations.size() - 1; i >= 0; i--) {
-        Bottle from = bottles[indicesPermutations[i][0]];
-        Bottle to = bottles[indicesPermutations[i][1]];
+        Bottle from = bottles[indicesPermutations[i].fromID];
+        Bottle to = bottles[indicesPermutations[i].toID];
 
         std::optional<Color> firstColorOfFromBottle = getFirstColorOfBottle(from);
         std::optional<Color> firstColorOfToBottle = getFirstColorOfBottle(to);
 
         // from bottle is empty;
         if (!firstColorOfFromBottle.has_value()) {
-            indicesPermutations.erase(
-                    std::remove(indicesPermutations.begin(), indicesPermutations.end(), indicesPermutations[i]),
-                    indicesPermutations.end()
-            );
+            indicesPermutations.erase(indicesPermutations.begin()+i);
             continue;
         }
 
         // from bottle top is not the same as to bottle top (to bottle top has to have liquid for this to trigger
         if (firstColorOfToBottle.has_value() && firstColorOfFromBottle.value() != firstColorOfToBottle.value()) {
-            indicesPermutations.erase(
-                    std::remove(indicesPermutations.begin(), indicesPermutations.end(), indicesPermutations[i]),
-                    indicesPermutations.end()
-            );
+            indicesPermutations.erase(indicesPermutations.begin()+i);
             continue;
         }
     }
@@ -161,7 +154,7 @@ void transferLiquid(Bottle *from, Bottle *to) {
     }
 }
 
-std::array<int, 2> bestMove(std::vector<std::array<int, 2>> possibleMoves, int depth = 0) {
+Move bestMove(std::vector<Move> possibleMoves, int depth = 0) {
 
 }
 
@@ -171,7 +164,7 @@ int main() {
     bottles.push_back(Bottle{1, {orange, purple, orange, purple}});
     bottles.push_back(Bottle{2, {blank, blank, blank, blank}});
 
-    std::vector<std::array<int, 2>> possibleMoves = getPossibleMoves(bottles);
+    std::vector<Move> possibleMoves = getPossibleMoves(bottles);
 
     std::cout << possibleMoves.size() << std::endl;
     printPerms(possibleMoves);
