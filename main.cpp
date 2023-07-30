@@ -5,7 +5,7 @@ const int COLORS_PER_BOTTLE = 4;
 const bool IS_BALL = true; // if they are balls instead of liquid, the pouring mechanism is different
 
 enum Color {
-    blank, red, blue, yellow, green, orange, purple
+    blank, red, blue, yellow, green, orange, purple, aqua
 };
 
 struct Bottle {
@@ -25,7 +25,6 @@ struct FindResult {
 void printMoves(const std::vector<Move> &moves) {
     for (const Move &move: moves) {
         std::cout << move.fromID << " " << move.toID;
-//        std::cout << ", ";
         std::cout << std::endl;
     }
     std::cout << std::endl;
@@ -274,14 +273,6 @@ findSolution(const std::vector<Move> &path, const std::vector<Bottle> &bottles,
             if (path.back().fromID == move.toID && path.back().toID == move.fromID) {
                 continue; //kill this branch, we're backtracking
             }
-
-            // double backtracked move
-//            if (
-//                    (path.end()-1)->fromID == (path.end()-1-2)->toID && (path.end()-1)->toID == (path.end()-1-2)->fromID
-//                    && (path.end()-1-1)->fromID == (path.end()-1-3)->toID && (path.end()-1-1)->toID == (path.end()-1-3)->fromID
-//               ) {
-//                continue;
-//            }
         }
         std::vector<Move> newPath = path;
         newPath.push_back(move);
@@ -295,14 +286,7 @@ findSolution(const std::vector<Move> &path, const std::vector<Bottle> &bottles,
         FindResult result;
         result.lastMove = move;
 
-//        printBottles(bottles);
-//        std::cout << move.fromID << " " << move.toID << std::endl;
-//        printBottles(newBottles);
-//        std::cout << std::endl;
-
         if (scoreGame(newBottles) == 10000000) {
-//            std::cout << "SOLUTION: " << std::endl;
-//            printMoves(newPath);
             result.sequence = newPath;
         }
 
@@ -320,11 +304,13 @@ findSolution(const std::vector<Move> &path, const std::vector<Bottle> &bottles,
 
 int main() {
     std::vector<Bottle> bottles;
-    bottles.push_back(Bottle{{purple, red, blue, purple}});
-    bottles.push_back(Bottle{{red, green, green, orange}});
-    bottles.push_back(Bottle{{red, orange, orange, purple}});
-    bottles.push_back(Bottle{{purple, red, green, blue}});
-    bottles.push_back(Bottle{{green, orange, blue, blue}});
+    bottles.push_back(Bottle{{blue, purple, blue, aqua}});
+    bottles.push_back(Bottle{{purple, purple, green, aqua}});
+    bottles.push_back(Bottle{{orange, orange, yellow, orange}});
+    bottles.push_back(Bottle{{aqua, red, purple, orange}});
+    bottles.push_back(Bottle{{blue, green, red, yellow}});
+    bottles.push_back(Bottle{{yellow, blue, red, red}});
+    bottles.push_back(Bottle{{yellow, aqua, green, green}});
     bottles.push_back(Bottle{{blank, blank, blank, blank}});
     bottles.push_back(Bottle{{blank, blank, blank, blank}});
 
@@ -332,6 +318,14 @@ int main() {
     std::vector<std::vector<Move>> solutions;
 
     std::optional<std::vector<Move>> lastSolution = findSolution(std::vector<Move>{}, bottles, &sequenceSeen).sequence;
+    if (lastSolution.has_value()) {
+        std::cout << "FIRST SOLUTION FOUND " << std::endl;
+        printMoves(lastSolution.value());
+    } else {
+        std::cout << "NO SOLUTIONS" << std::endl;
+        return 0;
+    }
+
     while (lastSolution.has_value()) {
         solutions.push_back(lastSolution.value());
         lastSolution = findSolution(std::vector<Move>{}, bottles, &sequenceSeen).sequence;
@@ -341,10 +335,10 @@ int main() {
         return a.size()<b.size();
     });
 
-    std::cout << "BEST SOLUTION " << std::endl;
+    std::cout << "SHORTEST SOLUTION FOUND " << std::endl;
     printMoves(solutions.front());
 
-    std::cout << "Explored " << sequenceSeen.size() << " solutions!" << std::endl;
+    std::cout << "Explored " << sequenceSeen.size() << " move sequences!" << std::endl;
 
     return 0;
 }
