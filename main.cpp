@@ -3,6 +3,7 @@
 
 const int COLORS_PER_BOTTLE = 4;
 const bool IS_BALL = true; // if they are balls instead of liquid, the pouring mechanism is different
+const bool FIND_SHORTEST = false;
 
 enum Color {
     blank, red, blue, yellow, green, orange, purple, aqua
@@ -325,17 +326,19 @@ int main() {
         return 0;
     }
 
-    while (lastSolution.has_value()) {
-        solutions.push_back(lastSolution.value());
-        lastSolution = findSolution(std::vector<Move>{}, bottles, &sequencesSeen, indicesPermutations).sequence;
+    if (FIND_SHORTEST) {
+        while (lastSolution.has_value()) {
+            solutions.push_back(lastSolution.value());
+            lastSolution = findSolution(std::vector<Move>{}, bottles, &sequencesSeen, indicesPermutations).sequence;
+        }
+
+        std::sort(solutions.begin(), solutions.end(), [](const std::vector<Move> &a, const std::vector<Move> &b) {
+            return a.size() < b.size();
+        });
+
+        std::cout << "SHORTEST SOLUTION FOUND " << std::endl;
+        printMoves(solutions.front());
     }
-
-    std::sort(solutions.begin(), solutions.end(), [](const std::vector<Move> &a, const std::vector<Move> &b) {
-        return a.size()<b.size();
-    });
-
-    std::cout << "SHORTEST SOLUTION FOUND " << std::endl;
-    printMoves(solutions.front());
 
     std::cout << "Explored " << sequencesSeen.size() << " move sequences!" << std::endl;
 
