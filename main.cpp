@@ -119,17 +119,8 @@ void heapPermutation(std::vector<Move> *indicesPermutations, int array[], int si
     }
 }
 
-std::vector<Move> getPossibleMoves(const std::vector<Bottle> &bottles) {
-    std::vector<Move> movePermutations;
-
-    int bottleCount = bottles.size();
-
-    int listOfIndices[bottleCount];
-    for (int i = 0; i < bottleCount; i++) {
-        listOfIndices[i] = i;
-    }
-
-    heapPermutation(&movePermutations, listOfIndices, bottleCount);
+std::vector<Move> getPossibleMoves(const std::vector<Bottle> &bottles, const std::vector<Move> &indicesPermutations) {
+    std::vector<Move> movePermutations = indicesPermutations;
 
     for (int i = movePermutations.size() - 1; i >= 0; i--) {
         // if from and to are the same
@@ -250,12 +241,12 @@ sequenceVectorContainsSequence(const std::vector<std::vector<Move>> &sequenceLis
 
 FindResult
 findSolution(const std::vector<Move> &path, const std::vector<Bottle> &bottles,
-             std::vector<std::vector<Move>> *sequenceSeenPtr, int depth = 0) {
+             std::vector<std::vector<Move>> *sequenceSeenPtr, const std::vector<Move> &indicesPermutations, int depth = 0) {
     if (depth == 100) {
         throw std::invalid_argument("fuck");
     }
 
-    std::vector<Move> possibleMoves = getPossibleMoves(bottles);
+    std::vector<Move> possibleMoves = getPossibleMoves(bottles, indicesPermutations);
 
     for (const Move &move: possibleMoves) {
         if (!path.empty()) {
@@ -287,7 +278,7 @@ findSolution(const std::vector<Move> &path, const std::vector<Bottle> &bottles,
         }
 
         while (!result.sequence.has_value() && result.lastMove && depth < 99) {
-            result = findSolution(newPath, newBottles, sequenceSeenPtr, depth + 1);
+            result = findSolution(newPath, newBottles, sequenceSeenPtr, indicesPermutations, depth + 1);
         }
 
         if (result.sequence.has_value())
@@ -310,10 +301,22 @@ int main() {
     bottles.push_back(Bottle{{blank, blank, blank, blank}});
     bottles.push_back(Bottle{{blank, blank, blank, blank}});
 
+    // Calculate all permutations bottles size 2 (used for finding possible moves)
+    int bottleCount = bottles.size();
+
+    int listOfIndices[bottleCount];
+    for (int i = 0; i < bottleCount; i++) {
+        listOfIndices[i] = i;
+    }
+
+    std::vector<Move> indicesPermutations;
+    heapPermutation(&indicesPermutations, listOfIndices, bottleCount);
+
+    // Solve
     std::vector<std::vector<Move>> sequencesSeen;
     std::vector<std::vector<Move>> solutions;
 
-    std::optional<std::vector<Move>> lastSolution = findSolution(std::vector<Move>{}, bottles, &sequencesSeen).sequence;
+    std::optional<std::vector<Move>> lastSolution = findSolution(std::vector<Move>{}, bottles, &sequencesSeen, indicesPermutations).sequence;
     if (lastSolution.has_value()) {
         std::cout << "FIRST SOLUTION FOUND " << std::endl;
         printMoves(lastSolution.value());
@@ -324,7 +327,7 @@ int main() {
 
     while (lastSolution.has_value()) {
         solutions.push_back(lastSolution.value());
-        lastSolution = findSolution(std::vector<Move>{}, bottles, &sequencesSeen).sequence;
+        lastSolution = findSolution(std::vector<Move>{}, bottles, &sequencesSeen, indicesPermutations).sequence;
     }
 
     std::sort(solutions.begin(), solutions.end(), [](const std::vector<Move> &a, const std::vector<Move> &b) {
