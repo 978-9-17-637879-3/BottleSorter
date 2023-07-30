@@ -341,11 +341,6 @@ int main() {
         return a.size()<b.size();
     });
 
-    std::vector<std::vector<Move>> altSolutions;
-    for (const std::vector<Move> &sequence : sequenceSeen) {
-
-    }
-
     std::cout << "BEST SOLUTION " << std::endl;
     printMoves(solutions.front());
 
