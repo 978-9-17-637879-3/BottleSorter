@@ -4,9 +4,10 @@
 const int COLORS_PER_BOTTLE = 4;
 const bool IS_BALL = true; // if they are balls instead of liquid, the pouring mechanism is different
 const bool FIND_SHORTEST = false;
+const int MAXIMUM_DEPTH = 1000;
 
 enum Color {
-    blank, red, blue, yellow, green, orange, purple, aqua
+    blank, red, blue, yellow, green, orange, purple, aqua, grey, lilac, lime
 };
 
 struct Bottle {
@@ -243,7 +244,7 @@ sequenceVectorContainsSequence(const std::vector<std::vector<Move>> &sequenceLis
 FindResult
 findSolution(const std::vector<Move> &path, const std::vector<Bottle> &bottles,
              std::vector<std::vector<Move>> *sequenceSeenPtr, const std::vector<Move> &indicesPermutations, int depth = 0) {
-    if (depth == 100) {
+    if (depth == MAXIMUM_DEPTH) {
         throw std::invalid_argument("fuck");
     }
 
@@ -295,7 +296,7 @@ findSolution(const std::vector<Move> &path, const std::vector<Bottle> &bottles,
             result.sequence = newPath;
         }
 
-        while (!result.sequence.has_value() && result.lastMove && depth < 99) {
+        while (!result.sequence.has_value() && result.lastMove && depth < MAXIMUM_DEPTH-1) {
             result = findSolution(newPath, newBottles, sequenceSeenPtr, indicesPermutations, depth + 1);
         }
 
@@ -309,13 +310,15 @@ findSolution(const std::vector<Move> &path, const std::vector<Bottle> &bottles,
 
 int main() {
     std::vector<Bottle> bottles;
-    bottles.push_back(Bottle{{blue, purple, blue, aqua}});
-    bottles.push_back(Bottle{{purple, purple, green, aqua}});
-    bottles.push_back(Bottle{{orange, orange, yellow, orange}});
-    bottles.push_back(Bottle{{aqua, red, purple, orange}});
-    bottles.push_back(Bottle{{blue, green, red, yellow}});
-    bottles.push_back(Bottle{{yellow, blue, red, red}});
-    bottles.push_back(Bottle{{yellow, aqua, green, green}});
+    bottles.push_back(Bottle{{blank, blank, blank, blank}});
+    bottles.push_back(Bottle{{orange, yellow, lilac, orange}});
+    bottles.push_back(Bottle{{blue, red, grey, yellow}});
+    bottles.push_back(Bottle{{grey, red, green, orange}});
+    bottles.push_back(Bottle{{blank, blank, blank, blank}});
+    bottles.push_back(Bottle{{yellow, lilac, blue, lilac}});
+    bottles.push_back(Bottle{{red, red, green, grey}});
+    bottles.push_back(Bottle{{orange, yellow, green, blue}});
+    bottles.push_back(Bottle{{grey, green, blue, lilac}});
     bottles.push_back(Bottle{{blank, blank, blank, blank}});
     bottles.push_back(Bottle{{blank, blank, blank, blank}});
 
