@@ -1,11 +1,12 @@
 #include <bits/stdc++.h>
 #include <vector>
 
-enum Color {
-    blank, red, blue, yellow
-};
-
 const int COLORS_PER_BOTTLE = 4;
+const bool IS_BALL = true; // if they are balls instead of liquid, the pouring mechanism is different
+
+enum Color {
+    blank, red, blue, yellow, green, orange, purple
+};
 
 struct Bottle {
     Color colors[COLORS_PER_BOTTLE];
@@ -21,10 +22,11 @@ struct FindResult {
     std::optional<Move> lastMove;
 };
 
-void printMoves(const std::vector<Move>& moves) {
-    for (const Move& move : moves) {
-        std::cout << move.fromID+1 << " " << move.toID+1;
-        std::cout << ", ";
+void printMoves(const std::vector<Move> &moves) {
+    for (const Move &move: moves) {
+        std::cout << move.fromID << " " << move.toID;
+//        std::cout << ", ";
+        std::cout << std::endl;
     }
     std::cout << std::endl;
 }
@@ -38,7 +40,7 @@ void printBottles(const std::vector<Bottle> &bottles) {
 }
 
 bool vectorContains(std::vector<Move> vector, Move moveSearchTarget) {
-    for (const Move& move : vector) {
+    for (const Move &move: vector) {
         if (move.fromID == moveSearchTarget.fromID && move.toID == moveSearchTarget.toID)
             return true;
     }
@@ -144,9 +146,10 @@ std::vector<Move> getPossibleMoves(const std::vector<Bottle> &bottles) {
         std::optional<Color> firstColorOfToBottle = getFirstColorOfBottle(to);
 
         // from bottle is complete; this may need to be removed...
-        if (firstColorOfFromBottle.has_value() && std::all_of(std::begin(from.colors), std::end(from.colors), [&](Color c) -> bool {
-            return firstColorOfFromBottle.value() == c;
-        })) {
+        if (firstColorOfFromBottle.has_value() &&
+            std::all_of(std::begin(from.colors), std::end(from.colors), [&](Color c) -> bool {
+                return firstColorOfFromBottle.value() == c;
+            })) {
             movePermutations.erase(movePermutations.begin() + i);
             continue;
         }
@@ -176,21 +179,29 @@ std::vector<Move> getPossibleMoves(const std::vector<Bottle> &bottles) {
 void transferLiquid(Bottle *from, Bottle *to) {
     std::optional<Color> toTransfer = getFirstColorOfBottle(*from);
 
-    int topColorOfBottleTopIndex = getTopColorOfBottleTopIndex(*to);
+    int topColorOfToBottleTopIndex = getTopColorOfBottleTopIndex(*to);
 
     int amountToTransfer = 0;
     for (int i = getTopColorOfBottleTopIndex(*from); i >= 0; i--) {
         if (from->colors[i] == toTransfer.value() &&
-            amountToTransfer + topColorOfBottleTopIndex < COLORS_PER_BOTTLE - 1) {
+            (IS_BALL ?
+             amountToTransfer < 1 :
+             (amountToTransfer + topColorOfToBottleTopIndex < COLORS_PER_BOTTLE - 1)
+            )) {
             amountToTransfer++;
             (*from).colors[i] = blank;
         } else {
             break;
         }
     }
-    for (int i = topColorOfBottleTopIndex + 1; amountToTransfer > 0 && i < COLORS_PER_BOTTLE; i++, amountToTransfer--) {
+    if (amountToTransfer > 1) {
+        std::cout << "";
+    }
+    for (int i = topColorOfToBottleTopIndex + 1;
+         amountToTransfer > 0 && i < COLORS_PER_BOTTLE; i++, amountToTransfer--) {
         (*to).colors[i] = toTransfer.value();
     }
+    std::cout << "";
 }
 
 // https://stackoverflow.com/a/26958878
@@ -227,8 +238,24 @@ long scoreGame(const std::vector<Bottle> &bottles) {
     return score;
 }
 
+
+bool
+sequenceVectorContainsSequence(const std::vector<std::vector<Move>> &sequenceList, const std::vector<Move> &sequence) {
+    for (const std::vector<Move> &s : sequenceList) {
+        if (s.size() != sequence.size())
+            continue;
+        for (long i = 0; i < s.size(); i++) {
+            if (s[i].fromID == sequence[i].fromID && s[i].toID == sequence[i].toID) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
 FindResult
-findBestSequence(const std::vector<Move> &path, const std::vector<Bottle> &bottles, int depth = 0) {
+findSolution(const std::vector<Move> &path, const std::vector<Bottle> &bottles,
+             std::vector<std::vector<Move>> *sequenceSeenPtr, int depth = 0) {
     if (depth == 100) {
         throw std::invalid_argument("fuck");
     }
@@ -237,15 +264,31 @@ findBestSequence(const std::vector<Move> &path, const std::vector<Bottle> &bottl
 
     for (const Move &move: possibleMoves) {
         if (!path.empty()) {
-            if (path.back().fromID == move.fromID && path.back().toID == move.toID) {
-                continue;
+            // duplicate move
+            if (!IS_BALL) {
+                if (path.back().fromID == move.fromID && path.back().toID == move.toID) {
+                    continue;  //kill this branch, we're backtracking
+                }
             }
+            // backtracked move
             if (path.back().fromID == move.toID && path.back().toID == move.fromID) {
                 continue; //kill this branch, we're backtracking
             }
+
+            // double backtracked move
+//            if (
+//                    (path.end()-1)->fromID == (path.end()-1-2)->toID && (path.end()-1)->toID == (path.end()-1-2)->fromID
+//                    && (path.end()-1-1)->fromID == (path.end()-1-3)->toID && (path.end()-1-1)->toID == (path.end()-1-3)->fromID
+//               ) {
+//                continue;
+//            }
         }
         std::vector<Move> newPath = path;
         newPath.push_back(move);
+        if (sequenceVectorContainsSequence(*sequenceSeenPtr, newPath)) {
+            continue;
+        }
+        sequenceSeenPtr->push_back(newPath);
         std::vector<Bottle> newBottles = bottles;
         transferLiquid(&newBottles[newPath.back().fromID], &newBottles[newPath.back().toID]);
 
@@ -258,14 +301,13 @@ findBestSequence(const std::vector<Move> &path, const std::vector<Bottle> &bottl
 //        std::cout << std::endl;
 
         if (scoreGame(newBottles) == 10000000) {
-            std::cout << "SOLUTION: ";
-//            printBottles(newBottles);
-            printMoves(newPath);
+//            std::cout << "SOLUTION: " << std::endl;
+//            printMoves(newPath);
             result.sequence = newPath;
         }
 
         while (!result.sequence.has_value() && result.lastMove && depth < 99) {
-            result = findBestSequence(newPath, newBottles, depth + 1);
+            result = findSolution(newPath, newBottles, sequenceSeenPtr, depth + 1);
         }
 
         if (result.sequence.has_value())
@@ -275,15 +317,39 @@ findBestSequence(const std::vector<Move> &path, const std::vector<Bottle> &bottl
     return FindResult{};
 }
 
+
 int main() {
     std::vector<Bottle> bottles;
-    bottles.push_back(Bottle{{blue, red, yellow, yellow}});
-    bottles.push_back(Bottle{{blue, red, blue, red}});
-    bottles.push_back(Bottle{{yellow, blue, red, yellow}});
+    bottles.push_back(Bottle{{purple, red, blue, purple}});
+    bottles.push_back(Bottle{{red, green, green, orange}});
+    bottles.push_back(Bottle{{red, orange, orange, purple}});
+    bottles.push_back(Bottle{{purple, red, green, blue}});
+    bottles.push_back(Bottle{{green, orange, blue, blue}});
     bottles.push_back(Bottle{{blank, blank, blank, blank}});
     bottles.push_back(Bottle{{blank, blank, blank, blank}});
 
-    findBestSequence(std::vector<Move>{}, bottles);
+    std::vector<std::vector<Move>> sequenceSeen;
+    std::vector<std::vector<Move>> solutions;
+
+    std::optional<std::vector<Move>> lastSolution = findSolution(std::vector<Move>{}, bottles, &sequenceSeen).sequence;
+    while (lastSolution.has_value()) {
+        solutions.push_back(lastSolution.value());
+        lastSolution = findSolution(std::vector<Move>{}, bottles, &sequenceSeen).sequence;
+    }
+
+    std::sort(solutions.begin(), solutions.end(), [](const std::vector<Move> &a, const std::vector<Move> &b) {
+        return a.size()<b.size();
+    });
+
+    std::vector<std::vector<Move>> altSolutions;
+    for (const std::vector<Move> &sequence : sequenceSeen) {
+
+    }
+
+    std::cout << "BEST SOLUTION " << std::endl;
+    printMoves(solutions.front());
+
+    std::cout << "Explored " << sequenceSeen.size() << " solutions!" << std::endl;
 
     return 0;
 }
