@@ -21,12 +21,6 @@ struct FindResult {
     std::optional<Move> lastMove;
 };
 
-void swap(int &a, int &b) {
-    int temp = a;
-    a = b;
-    b = temp;
-}
-
 void printMoves(const std::vector<Move>& moves) {
     for (const Move& move : moves) {
         std::cout << move.fromID+1 << " " << move.toID+1;
@@ -49,36 +43,6 @@ bool vectorContains(std::vector<Move> vector, Move moveSearchTarget) {
             return true;
     }
     return false;
-}
-
-// https://www.geeksforgeeks.org/heaps-algorithm-for-generating-permutations/#
-// Generating permutation using Heap Algorithm
-void heapPermutation(std::vector<Move> *indicesPermutations, int array[], int size) {
-    // if size becomes 1 then prints the obtained
-    // permutation
-    if (size == 1) {
-        Move outputPermutations{array[0], array[1]};
-
-        if (!vectorContains(*indicesPermutations, outputPermutations)) {
-            indicesPermutations->push_back(outputPermutations);
-        }
-
-        return;
-    }
-
-    for (int i = 0; i < size; i++) {
-        heapPermutation(indicesPermutations, array, size - 1);
-
-        // if size is odd, swap 0th i.e (first) and
-        // (size-1)th i.e (last) element
-        if (size % 2 == 1)
-            swap(array[0], array[size - 1]);
-
-            // If size is even, swap ith and
-            // (size-1)th i.e (last) element
-        else
-            swap(array[i], array[size - 1]);
-    }
 }
 
 int getTopColorOfBottleBottomIndex(Bottle bottle) {
@@ -116,6 +80,42 @@ std::optional<Color> getFirstColorOfBottle(Bottle bottle) {
         firstColor = bottle.colors[firstColorOfBottleIndex];
 
     return firstColor;
+}
+
+void swap(int &a, int &b) {
+    int temp = a;
+    a = b;
+    b = temp;
+}
+
+// https://www.geeksforgeeks.org/heaps-algorithm-for-generating-permutations/#
+// Generating permutation using Heap Algorithm
+void heapPermutation(std::vector<Move> *indicesPermutations, int array[], int size) {
+    // if size becomes 1 then prints the obtained
+    // permutation
+    if (size == 1) {
+        Move outputPermutations{array[0], array[1]};
+
+        if (!vectorContains(*indicesPermutations, outputPermutations)) {
+            indicesPermutations->push_back(outputPermutations);
+        }
+
+        return;
+    }
+
+    for (int i = 0; i < size; i++) {
+        heapPermutation(indicesPermutations, array, size - 1);
+
+        // if size is odd, swap 0th i.e (first) and
+        // (size-1)th i.e (last) element
+        if (size % 2 == 1)
+            swap(array[0], array[size - 1]);
+
+            // If size is even, swap ith and
+            // (size-1)th i.e (last) element
+        else
+            swap(array[i], array[size - 1]);
+    }
 }
 
 std::vector<Move> getPossibleMoves(const std::vector<Bottle> &bottles) {
