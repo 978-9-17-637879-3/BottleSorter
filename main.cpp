@@ -249,21 +249,37 @@ findSolution(const std::vector<Move> &path, const std::vector<Bottle> &bottles,
 
     std::vector<Move> possibleMoves = getPossibleMoves(bottles, indicesPermutations);
 
-    for (const Move &move: possibleMoves) {
+    for (const Move &newMove: possibleMoves) {
         if (!path.empty()) {
             // duplicate move
             if (!IS_BALL) {
-                if (path.back().fromID == move.fromID && path.back().toID == move.toID) {
+                if (path.back().fromID == newMove.fromID && path.back().toID == newMove.toID) {
                     continue;  //kill this branch, we're backtracking
                 }
             }
-            // backtracked move
-            if (path.back().fromID == move.toID && path.back().toID == move.fromID) {
+            // backtracked newMove
+            if (path.back().fromID == newMove.toID && path.back().toID == newMove.fromID) {
                 continue; //kill this branch, we're backtracking
             }
         }
         std::vector<Move> newPath = path;
-        newPath.push_back(move);
+        // if a ball is being transferred twice in a row, optimize the transfer by eliminating the middleman
+        if (IS_BALL) {
+            if (newPath.size() > 1) {
+                Move lastMove = newPath.back();
+                if (lastMove.toID == newMove.fromID) {
+                    newPath.pop_back();
+                    newPath.push_back(Move{lastMove.fromID, newMove.toID});
+                    std::cout << "Optimized ball transfer" << std::endl;
+                } else {
+                    newPath.push_back(newMove);
+                }
+            } else {
+                newPath.push_back(newMove);
+            }
+        } else {
+            newPath.push_back(newMove);
+        }
         if (sequenceVectorContainsSequence(*sequenceSeenPtr, newPath)) {
             continue;
         }
@@ -272,7 +288,7 @@ findSolution(const std::vector<Move> &path, const std::vector<Bottle> &bottles,
         transferLiquid(&newBottles[newPath.back().fromID], &newBottles[newPath.back().toID]);
 
         FindResult result;
-        result.lastMove = move;
+        result.lastMove = newMove;
 
         if (scoreGame(newBottles) == 10000000) {
             result.sequence = newPath;
