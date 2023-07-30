@@ -270,7 +270,6 @@ findSolution(const std::vector<Move> &path, const std::vector<Bottle> &bottles,
                 if (lastMove.toID == newMove.fromID) {
                     newPath.pop_back();
                     newPath.push_back(Move{lastMove.fromID, newMove.toID});
-                    std::cout << "Optimized ball transfer" << std::endl;
                 } else {
                     newPath.push_back(newMove);
                 }
