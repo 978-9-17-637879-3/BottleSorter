@@ -193,14 +193,10 @@ void transferLiquid(Bottle *from, Bottle *to) {
             break;
         }
     }
-    if (amountToTransfer > 1) {
-        std::cout << "";
-    }
     for (int i = topColorOfToBottleTopIndex + 1;
          amountToTransfer > 0 && i < COLORS_PER_BOTTLE; i++, amountToTransfer--) {
         (*to).colors[i] = toTransfer.value();
     }
-    std::cout << "";
 }
 
 // https://stackoverflow.com/a/26958878
