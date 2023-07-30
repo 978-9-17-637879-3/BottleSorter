@@ -314,10 +314,10 @@ int main() {
     bottles.push_back(Bottle{{blank, blank, blank, blank}});
     bottles.push_back(Bottle{{blank, blank, blank, blank}});
 
-    std::vector<std::vector<Move>> sequenceSeen;
+    std::vector<std::vector<Move>> sequencesSeen;
     std::vector<std::vector<Move>> solutions;
 
-    std::optional<std::vector<Move>> lastSolution = findSolution(std::vector<Move>{}, bottles, &sequenceSeen).sequence;
+    std::optional<std::vector<Move>> lastSolution = findSolution(std::vector<Move>{}, bottles, &sequencesSeen).sequence;
     if (lastSolution.has_value()) {
         std::cout << "FIRST SOLUTION FOUND " << std::endl;
         printMoves(lastSolution.value());
@@ -328,7 +328,7 @@ int main() {
 
     while (lastSolution.has_value()) {
         solutions.push_back(lastSolution.value());
-        lastSolution = findSolution(std::vector<Move>{}, bottles, &sequenceSeen).sequence;
+        lastSolution = findSolution(std::vector<Move>{}, bottles, &sequencesSeen).sequence;
     }
 
     std::sort(solutions.begin(), solutions.end(), [](const std::vector<Move> &a, const std::vector<Move> &b) {
@@ -338,7 +338,7 @@ int main() {
     std::cout << "SHORTEST SOLUTION FOUND " << std::endl;
     printMoves(solutions.front());
 
-    std::cout << "Explored " << sequenceSeen.size() << " move sequences!" << std::endl;
+    std::cout << "Explored " << sequencesSeen.size() << " move sequences!" << std::endl;
 
     return 0;
 }
