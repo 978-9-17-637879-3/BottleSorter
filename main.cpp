@@ -199,9 +199,6 @@ depthFirstSearch(const std::vector<Move> &path,
 //    printBottles(bottles);
 //    printMoves(possibleMoves);
     for (const Move &newMove: possibleMoves) {
-        if (depth == 0) {
-            std::cout << "";
-        }
         if (!path.empty()) {
             // duplicate move
             if (!IS_BALL) {
