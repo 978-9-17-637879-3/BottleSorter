@@ -93,7 +93,11 @@ void swap(int &a, int &b) {
 
 // https://www.geeksforgeeks.org/heaps-algorithm-for-generating-permutations/#
 // Generating permutation using Heap Algorithm
-void heapPermutation(std::vector<Move> *indicesPermutations, int array[], int size) {
+void heapPermutation(std::vector<Move> *indicesPermutations, int array[], int sizeOfArray, int size) {
+    // size of permutations size 2 is nPr(bottleCount. 2) == bottleCount!/(bottleCount-2)! == bottleCount*(bottleCount-1);
+    if (indicesPermutations->size() == sizeOfArray*(sizeOfArray-1)) {
+        return;
+    }
     // if size becomes 1 then prints the obtained
     // permutation
     if (size == 1) {
@@ -101,13 +105,15 @@ void heapPermutation(std::vector<Move> *indicesPermutations, int array[], int si
 
         if (!vectorContains(*indicesPermutations, outputPermutations)) {
             indicesPermutations->push_back(outputPermutations);
+            std::cout << "\x1B[2J\x1B[H";
+            std::cout << "Index permutations: " << indicesPermutations->size() << "/" << sizeOfArray*(sizeOfArray-1) << std::endl;
         }
 
         return;
     }
 
     for (int i = 0; i < size; i++) {
-        heapPermutation(indicesPermutations, array, size - 1);
+        heapPermutation(indicesPermutations, array, sizeOfArray, size - 1);
 
         // if size is odd, swap 0th i.e (first) and
         // (size-1)th i.e (last) element
@@ -331,7 +337,7 @@ int main() {
     }
 
     std::vector<Move> indicesPermutations;
-    heapPermutation(&indicesPermutations, listOfIndices, bottleCount);
+    heapPermutation(&indicesPermutations, listOfIndices, bottleCount, bottleCount);
 
     // Solve
     std::vector<std::vector<Move>> sequencesSeen;
