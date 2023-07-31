@@ -159,7 +159,6 @@ void transferLiquid(Bottle *from, Bottle *to) {
 }
 
 bool gameOver(const std::vector<Bottle> &bottles) {
-    long score = 0;
     for (const Bottle &bottle: bottles) {
         for (int i = 1; i < COLORS_PER_BOTTLE; i++) {
             if (bottle.colors[0] != bottle.colors[i]) return false;
