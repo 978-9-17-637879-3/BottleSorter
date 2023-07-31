@@ -105,18 +105,16 @@ std::vector<Move> getPossibleMoves(const std::vector<Bottle> &bottles, const std
         Color firstColorOfFromBottle = getFirstColorOfBottle(from);
         Color firstColorOfToBottle = getFirstColorOfBottle(to);
 
-        // from bottle is complete; this may need to be removed...
-        if (firstColorOfFromBottle != blank &&
-            std::all_of(std::begin(from.colors), std::end(from.colors), [&](Color c) -> bool {
-                return firstColorOfFromBottle == c;
-            })) {
-            continue;
+        // from bottle is complete or empty; this may need to be removed...
+        bool fromBottleCompleteOrEmpty = true;
+        for (int i = 1 ; i < COLORS_PER_BOTTLE-1; i++) {
+            if (from.colors[i] != firstColorOfFromBottle) {
+                fromBottleCompleteOrEmpty = false;
+                break;
+            }
         }
-
-        // from bottle is empty;
-        if (from.colors[0] == blank) {
+        if (fromBottleCompleteOrEmpty)
             continue;
-        }
 
         // to bottle is full
         if (to.colors[COLORS_PER_BOTTLE - 1] != blank) {
