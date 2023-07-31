@@ -272,6 +272,15 @@ depthFirstSearch(const std::vector<Move> &path,
     return FindResult{};
 }
 
+std::vector<std::vector<Move>> runDepthFirstSearch(std::vector<std::vector<Move>> sequencesSeen, std::vector<Bottle> bottles, std::vector<Move> indicesPermutations) {
+    std::vector<std::vector<Move>> solutions;
+
+    int shortestSolutionLength = MAXIMUM_DEPTH;
+    depthFirstSearch(std::vector<Move>{}, bottles, &sequencesSeen, &solutions, indicesPermutations,
+                     &shortestSolutionLength);
+
+    return solutions;
+}
 
 int main() {
     /*
@@ -313,12 +322,7 @@ int main() {
 
     // Solve
     std::vector<std::vector<Move>> sequencesSeen;
-    std::vector<std::vector<Move>> solutions;
-    std::optional<std::vector<Move>> bestSolution;
-
-    int shortestSolutionLength = MAXIMUM_DEPTH;
-    depthFirstSearch(std::vector<Move>{}, bottles, &sequencesSeen, &solutions, indicesPermutations,
-                     &shortestSolutionLength).sequence;
+    std::vector<std::vector<Move>> solutions = runDepthFirstSearch(sequencesSeen, bottles, indicesPermutations);
 
     std::sort(solutions.begin(), solutions.end(), [](const std::vector<Move> &a, const std::vector<Move> &b) {
         return a.size() < b.size();
@@ -329,11 +333,8 @@ int main() {
         std::cout << "Explored " << sequencesSeen.size() << " sequences" << std::endl;
         return 0;
     } else {
-        bestSolution = solutions.front();
-        if (bestSolution.has_value()) {
-            std::cout << "BEST SOLUTION FOUND " << std::endl;
-            printMoves(bestSolution.value());
-        }
+        std::cout << "BEST SOLUTION FOUND " << std::endl;
+        printMoves(solutions.front());
     }
 
 //    if (FIND_SHORTEST) {
@@ -350,7 +351,6 @@ int main() {
 //        printMoves(solutions.front());
 //    }
 
-    std::cout << "Explored " << sequencesSeen.size() << " move sequences!" << std::endl;
 
     return 0;
 }
