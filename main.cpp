@@ -193,8 +193,6 @@ depthFirstSearch(const std::vector<Move> &path,
                  int depth = 0) {
 
     std::vector<Move> possibleMoves = getPossibleMoves(bottles, indicesPermutations);
-//    printMoves(possibleMoves);
-//    return FindResult{};
 
 //    std::cout << "Setup:" <<std::endl;
 //    printSequence(path);
@@ -220,25 +218,8 @@ depthFirstSearch(const std::vector<Move> &path,
         if (newPath.size() >= *shortestSolutionLengthPtr) {
             continue;
         }
-        // if a ball is being transferred twice in a row, optimize the transfer by eliminating the middleman
-//        if (IS_BALL) {
-//            if (newPath.size() > 1) {
-//                Move lastMove = newPath.back();
-//                if (lastMove.toID == newMove.fromID) {
-//                    newPath.pop_back();
-//                    newPath.push_back(Move{lastMove.fromID, newMove.toID});
-//                } else {
-//                    newPath.push_back(newMove);
-//                }
-//            } else {
-//                newPath.push_back(newMove);
-//            }
-//        } else {
             newPath.push_back(newMove);
-//        }
-//        if (sequenceVectorContainsSequence(*sequencesSeenPtr, newPath)) {
-//            continue;
-//        }
+
         sequencesSeenPtr->push_back(newPath);
 //        std::cout << "\x1B[2J\x1B[H";
 //        std::cout << "Unique Sequences Calculated: " << sequencesSeenPtr->size() << std::endl;
