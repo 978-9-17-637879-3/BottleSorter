@@ -100,16 +100,18 @@ std::list<Move> getPossibleMoves(const std::vector<Bottle> &bottles, Move indice
 
     // the size of indicesPermutation is nPr(bottlesCount, 2) which is equivalent to bottleCount * (bottleCount-1)
     for (int i = 0; i < (bottles.size()*(bottles.size()-1)); i++) {
-        Bottle from = bottles[indicesPermutations[i].fromID];
-        Bottle to = bottles[indicesPermutations[i].toID];
+        Move possibleMove = indicesPermutations[i];
+
+        Bottle from = bottles[possibleMove.fromID];
+        Bottle to = bottles[possibleMove.toID];
 
         Color firstColorOfFromBottle = getFirstColorOfBottle(from);
         Color firstColorOfToBottle = getFirstColorOfBottle(to);
 
         // from bottle is complete or empty; this may need to be removed...
         bool fromBottleCompleteOrEmpty = true;
-        for (int i = 1 ; i < COLORS_PER_BOTTLE-1; i++) {
-            if (from.colors[i] != firstColorOfFromBottle) {
+        for (int j = 0 ; j < COLORS_PER_BOTTLE-1; j++) {
+            if (from.colors[j] != firstColorOfFromBottle) {
                 fromBottleCompleteOrEmpty = false;
                 break;
             }
@@ -127,7 +129,7 @@ std::list<Move> getPossibleMoves(const std::vector<Bottle> &bottles, Move indice
             continue;
         }
 
-        possibleMoves.push_back(indicesPermutations[i]);
+        possibleMoves.push_back(possibleMove);
     }
 
     return possibleMoves;
