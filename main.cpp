@@ -85,48 +85,6 @@ std::optional<Color> getFirstColorOfBottle(Bottle bottle) {
     return firstColor;
 }
 
-void swap(int &a, int &b) {
-    int temp = a;
-    a = b;
-    b = temp;
-}
-
-// https://www.geeksforgeeks.org/heaps-algorithm-for-generating-permutations/#
-// Generating permutation using Heap Algorithm
-void heapPermutation(std::vector<Move> *indicesPermutations, int array[], int sizeOfArray, int size) {
-    // size of permutations size 2 is nPr(bottleCount. 2) == bottleCount!/(bottleCount-2)! == bottleCount*(bottleCount-1);
-    if (indicesPermutations->size() == sizeOfArray*(sizeOfArray-1)) {
-        return;
-    }
-    // if size becomes 1 then prints the obtained
-    // permutation
-    if (size == 1) {
-        Move outputPermutations{array[0], array[1]};
-
-        if (!vectorContains(*indicesPermutations, outputPermutations)) {
-            indicesPermutations->push_back(outputPermutations);
-            std::cout << "\x1B[2J\x1B[H";
-            std::cout << "Index permutations: " << indicesPermutations->size() << "/" << sizeOfArray*(sizeOfArray-1) << std::endl;
-        }
-
-        return;
-    }
-
-    for (int i = 0; i < size; i++) {
-        heapPermutation(indicesPermutations, array, sizeOfArray, size - 1);
-
-        // if size is odd, swap 0th i.e (first) and
-        // (size-1)th i.e (last) element
-        if (size % 2 == 1)
-            swap(array[0], array[size - 1]);
-
-            // If size is even, swap ith and
-            // (size-1)th i.e (last) element
-        else
-            swap(array[i], array[size - 1]);
-    }
-}
-
 std::vector<Move> getPossibleMoves(const std::vector<Bottle> &bottles, const std::vector<Move> &indicesPermutations) {
     std::vector<Move> movePermutations = indicesPermutations;
 
@@ -153,7 +111,7 @@ std::vector<Move> getPossibleMoves(const std::vector<Bottle> &bottles, const std
         }
 
         // from bottle is empty;
-        if (!firstColorOfFromBottle.has_value()) {
+        if (from.colors[0] == blank) {
             movePermutations.erase(movePermutations.begin() + i);
             continue;
         }
@@ -331,13 +289,13 @@ int main() {
     // Calculate all permutations bottles size 2 (used for finding possible moves)
     int bottleCount = bottles.size();
 
-    int listOfIndices[bottleCount];
-    for (int i = 0; i < bottleCount; i++) {
-        listOfIndices[i] = i;
-    }
-
     std::vector<Move> indicesPermutations;
-    heapPermutation(&indicesPermutations, listOfIndices, bottleCount, bottleCount);
+    for (int i = 0; i < bottleCount-1; i++) {
+        for (int j = 0; j <= bottleCount-1; j++) {
+            if (i==j) continue;
+            indicesPermutations.push_back(Move{i,j});
+        }
+    }
 
     // Solve
     std::vector<std::vector<Move>> sequencesSeen;
