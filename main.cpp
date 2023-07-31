@@ -290,8 +290,8 @@ int main() {
     int bottleCount = bottles.size();
 
     std::vector<Move> indicesPermutations;
-    for (int i = 0; i < bottleCount-1; i++) {
-        for (int j = 0; j <= bottleCount-1; j++) {
+    for (int i = 0; i < bottleCount; i++) {
+        for (int j = 0; j < bottleCount; j++) {
             if (i==j) continue;
             indicesPermutations.push_back(Move{i,j});
         }
