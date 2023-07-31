@@ -248,8 +248,8 @@ findSolution(const std::vector<Move> &path, const std::vector<Bottle> &bottles,
             continue;
         }
         sequenceSeenPtr->push_back(newPath);
-        std::cout << "\x1B[2J\x1B[H";
-        std::cout << "Unique Sequences Calculated: " << sequenceSeenPtr->size() << std::endl;
+//        std::cout << "\x1B[2J\x1B[H";
+//        std::cout << "Unique Sequences Calculated: " << sequenceSeenPtr->size() << std::endl;
         std::vector<Bottle> newBottles = bottles;
         transferLiquid(&newBottles[newPath.back().fromID], &newBottles[newPath.back().toID]);
 
