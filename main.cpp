@@ -39,7 +39,7 @@ void printSequence(const std::vector<Move> &moves) {
         std::cout << "->";
     }
     std::cout << moves.back().fromID << " " << moves.back().toID;
-    std::cout << std::endl;
+    std::cout <<  "|end" << std::endl;
 }
 
 void printBottles(const std::vector<Bottle> &bottles) {
@@ -184,20 +184,20 @@ sequenceVectorContainsSequence(const std::vector<std::vector<Move>> &sequenceLis
 }
 
 FindResult
-findSolution(const std::vector<Move> &path,
-             const std::vector<Bottle> &bottles,
-             std::vector<std::vector<Move>> *sequencesSeenPtr,
-             std::vector<std::vector<Move>> *solutionsPtr,
-             const std::vector<Move> &indicesPermutations,
-             int* shortestSolutionLengthPtr,
-             int depth = 0) {
+depthFirstSearch(const std::vector<Move> &path,
+                 const std::vector<Bottle> &bottles,
+                 std::vector<std::vector<Move>> *sequencesSeenPtr,
+                 std::vector<std::vector<Move>> *solutionsPtr,
+                 const std::vector<Move> &indicesPermutations,
+                 int* shortestSolutionLengthPtr,
+                 int depth = 0) {
 
     std::vector<Move> possibleMoves = getPossibleMoves(bottles, indicesPermutations);
 //    printMoves(possibleMoves);
 //    return FindResult{};
 
-    std::cout << "Setup:" <<std::endl;
-    printSequence(path);
+//    std::cout << "Setup:" <<std::endl;
+//    printSequence(path);
 //    printBottles(bottles);
 //    printMoves(possibleMoves);
     for (const Move &newMove: possibleMoves) {
@@ -256,7 +256,8 @@ findSolution(const std::vector<Move> &path,
         }
 
         while (!result.sequence.has_value() && result.lastMove && depth < MAXIMUM_DEPTH-1) {
-            result = findSolution(newPath, newBottles, sequencesSeenPtr, solutionsPtr, indicesPermutations, shortestSolutionLengthPtr, depth + 1);
+            result = depthFirstSearch(newPath, newBottles, sequencesSeenPtr, solutionsPtr, indicesPermutations,
+                                      shortestSolutionLengthPtr, depth + 1);
         }
 
         if (result.sequence.has_value()) {
@@ -293,13 +294,11 @@ int main() {
 
 
     std::vector<Bottle> bottles;
-    bottles.push_back(Bottle{{green, red, blank, blank}});
-    bottles.push_back(Bottle{{yellow, red, blue, blank}});
-    bottles.push_back(Bottle{{blue, red, yellow, green}});
     bottles.push_back(Bottle{{blank, blank, blank, blank}});
-    bottles.push_back(Bottle{{green, yellow, blue, blank}});
     bottles.push_back(Bottle{{blank, blank, blank, blank}});
-    bottles.push_back(Bottle{{blue, green, red, yellow}});
+    bottles.push_back(Bottle{{green, yellow, blank, blank}});
+    bottles.push_back(Bottle{{yellow, green, blank, blank}});
+    bottles.push_back(Bottle{{green, yellow, green, blank}});
 
     // Calculate all permutations bottles size 2 (used for finding possible moves)
     int bottleCount = bottles.size();
@@ -318,7 +317,8 @@ int main() {
     std::optional<std::vector<Move>> bestSolution;
 
     int shortestSolutionLength = MAXIMUM_DEPTH;
-    findSolution(std::vector<Move>{}, bottles, &sequencesSeen, &solutions, indicesPermutations, &shortestSolutionLength).sequence;
+    depthFirstSearch(std::vector<Move>{}, bottles, &sequencesSeen, &solutions, indicesPermutations,
+                     &shortestSolutionLength).sequence;
 
     std::sort(solutions.begin(), solutions.end(), [](const std::vector<Move> &a, const std::vector<Move> &b) {
         return a.size() < b.size();
@@ -339,7 +339,7 @@ int main() {
 //    if (FIND_SHORTEST) {
 //        while (bestSolution.has_value()) {
 //            solutions.push_back(bestSolution.value());
-//            bestSolution = findSolution(std::vector<Move>{}, bottles, &sequencesSeen, indicesPermutations, &shortestSolutionLength).sequence;
+//            bestSolution = depthFirstSearch(std::vector<Move>{}, bottles, &sequencesSeen, indicesPermutations, &shortestSolutionLength).sequence;
 //        }
 //
 //        std::sort(solutions.begin(), solutions.end(), [](const std::vector<Move> &a, const std::vector<Move> &b) {
