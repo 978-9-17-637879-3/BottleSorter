@@ -209,7 +209,7 @@ depthFirstSearch(const std::vector<Move> &path,
                     continue;  //kill this branch, we're backtracking
                 }
             }
-            // backtracked newMove
+            // backtracked move
             if (path.back().fromID == newMove.toID && path.back().toID == newMove.fromID) {
                 continue; //kill this branch, we're backtracking
             }
