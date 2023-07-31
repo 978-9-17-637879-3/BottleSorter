@@ -60,10 +60,10 @@ bool vectorContains(std::vector<Move> vector, Move moveSearchTarget) {
 
 int getTopColorOfBottleBottomIndex(Bottle bottle) {
     int firstColorIndex = -1;
-    std::optional<Color> firstColor;
+    Color firstColor = blank;
     for (int i = COLORS_PER_BOTTLE - 1; i >= 0; i--) {
         if (bottle.colors[i] != blank) {
-            if (firstColor.has_value() && firstColor.value() != bottle.colors[i]) {
+            if (firstColor != blank && firstColor != bottle.colors[i]) {
                 break;
             }
             firstColorIndex = i;
@@ -75,7 +75,6 @@ int getTopColorOfBottleBottomIndex(Bottle bottle) {
 
 int getTopColorOfBottleTopIndex(Bottle bottle) {
     int firstColorIndex = -1;
-    std::optional<Color> firstColor;
     for (int i = COLORS_PER_BOTTLE - 1; i >= 0; i--) {
         if (bottle.colors[i] != blank) {
             firstColorIndex = i;
@@ -85,66 +84,64 @@ int getTopColorOfBottleTopIndex(Bottle bottle) {
     return firstColorIndex;
 }
 
-std::optional<Color> getFirstColorOfBottle(Bottle bottle) {
-    std::optional<Color> firstColor;
+Color getFirstColorOfBottle(Bottle bottle) {
+    Color firstColor;
 
     int firstColorOfBottleIndex = getTopColorOfBottleBottomIndex(bottle);
     if (firstColorOfBottleIndex != -1)
         firstColor = bottle.colors[firstColorOfBottleIndex];
+    else firstColor = blank;
 
     return firstColor;
 }
 
 std::vector<Move> getPossibleMoves(const std::vector<Bottle> &bottles, const std::vector<Move> &indicesPermutations) {
-    std::vector<Move> movePermutations = indicesPermutations;
+    std::vector<Move> possibleMoves;
 
-    for (int i = movePermutations.size() - 1; i >= 0; i--) {
-        Move movePerm = movePermutations[i];
+    for (const Move &movePerm : indicesPermutations) {
         Bottle from = bottles[movePerm.fromID];
         Bottle to = bottles[movePerm.toID];
 
-        std::optional<Color> firstColorOfFromBottle = getFirstColorOfBottle(from);
-        std::optional<Color> firstColorOfToBottle = getFirstColorOfBottle(to);
+        Color firstColorOfFromBottle = getFirstColorOfBottle(from);
+        Color firstColorOfToBottle = getFirstColorOfBottle(to);
 
         // from bottle is complete; this may need to be removed...
-        if (firstColorOfFromBottle.has_value() &&
+        if (firstColorOfFromBottle != blank &&
             std::all_of(std::begin(from.colors), std::end(from.colors), [&](Color c) -> bool {
-                return firstColorOfFromBottle.value() == c;
+                return firstColorOfFromBottle == c;
             })) {
-            movePermutations.erase(movePermutations.begin() + i);
             continue;
         }
 
         // from bottle is empty;
         if (from.colors[0] == blank) {
-            movePermutations.erase(movePermutations.begin() + i);
             continue;
         }
 
         // to bottle is full
         if (to.colors[COLORS_PER_BOTTLE - 1] != blank) {
-            movePermutations.erase(movePermutations.begin() + i);
             continue;
         }
 
         // from bottle top is not the same as to bottle top (to bottle top has to have liquid for this to trigger
-        if (firstColorOfToBottle.has_value() && firstColorOfFromBottle.value() != firstColorOfToBottle.value()) {
-            movePermutations.erase(movePermutations.begin() + i);
+        if (firstColorOfToBottle != blank && firstColorOfFromBottle != firstColorOfToBottle) {
             continue;
         }
+
+        possibleMoves.push_back(movePerm);
     }
 
-    return movePermutations;
+    return possibleMoves;
 }
 
 void transferLiquid(Bottle *from, Bottle *to) {
-    std::optional<Color> toTransfer = getFirstColorOfBottle(*from);
+    Color toTransfer = getFirstColorOfBottle(*from);
 
     int topColorOfToBottleTopIndex = getTopColorOfBottleTopIndex(*to);
 
     int amountToTransfer = 0;
     for (int i = getTopColorOfBottleTopIndex(*from); i >= 0; i--) {
-        if (from->colors[i] == toTransfer.value() &&
+        if (from->colors[i] == toTransfer &&
             (IS_BALL ?
              amountToTransfer < 1 :
              (amountToTransfer + topColorOfToBottleTopIndex < COLORS_PER_BOTTLE - 1)
@@ -157,42 +154,18 @@ void transferLiquid(Bottle *from, Bottle *to) {
     }
     for (int i = topColorOfToBottleTopIndex + 1;
          amountToTransfer > 0 && i < COLORS_PER_BOTTLE; i++, amountToTransfer--) {
-        (*to).colors[i] = toTransfer.value();
+        (*to).colors[i] = toTransfer;
     }
 }
 
-// https://stackoverflow.com/a/26958878
-template<typename MAP>
-const typename MAP::mapped_type &get_with_default(const MAP &m,
-                                                  const typename MAP::key_type &key,
-                                                  const typename MAP::mapped_type &defval) {
-    typename MAP::const_iterator it = m.find(key);
-    if (it == m.end())
-        return defval;
-
-    return it->second;
-}
-
-long scoreGame(const std::vector<Bottle> &bottles) {
+bool gameOver(const std::vector<Bottle> &bottles) {
     long score = 0;
-    bool gameFinished = true;
     for (const Bottle &bottle: bottles) {
-        std::map<Color, int> colorCountMap;
-        bool allColorSame = true;
-        for (const Color &color: bottle.colors) {
-            colorCountMap[color] = get_with_default(colorCountMap, color, 0) + 1;
-            if (color != bottle.colors[0]) {
-                allColorSame = false;
-            }
+        for (int i = 1; i < COLORS_PER_BOTTLE; i++) {
+            if (bottle.colors[0] != bottle.colors[i]) return false;
         }
-
-        if (!allColorSame) gameFinished = false;
-
-        // Bonus points if vial is solved (empty does not count as solved)
-        if (allColorSame && bottle.colors[0] != blank) score += 10;
     }
-    if (gameFinished) score = 10000000;
-    return score;
+    return true;
 }
 
 
@@ -218,9 +191,6 @@ findSolution(const std::vector<Move> &path,
              const std::vector<Move> &indicesPermutations,
              int* shortestSolutionLengthPtr,
              int depth = 0) {
-    if (depth == MAXIMUM_DEPTH) {
-        throw std::invalid_argument("fuck");
-    }
 
     std::vector<Move> possibleMoves = getPossibleMoves(bottles, indicesPermutations);
 //    printMoves(possibleMoves);
@@ -278,7 +248,7 @@ findSolution(const std::vector<Move> &path,
         FindResult result;
         result.lastMove = newMove;
 
-        if (scoreGame(newBottles) == 10000000) {
+        if (gameOver(newBottles)) {
             result.sequence = newPath;
             if (result.sequence.value().size() < *shortestSolutionLengthPtr) {
                 *shortestSolutionLengthPtr = newPath.size();
