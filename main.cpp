@@ -95,8 +95,8 @@ Color getFirstColorOfBottle(Bottle bottle) {
     return firstColor;
 }
 
-std::vector<Move> getPossibleMoves(const std::vector<Bottle> &bottles, const std::vector<Move> &indicesPermutations) {
-    std::vector<Move> possibleMoves;
+std::list<Move> getPossibleMoves(const std::vector<Bottle> &bottles, const std::vector<Move> &indicesPermutations) {
+    std::list<Move> possibleMoves;
 
     for (const Move &movePerm : indicesPermutations) {
         Bottle from = bottles[movePerm.fromID];
@@ -189,7 +189,7 @@ depthFirstSearch(const std::vector<Move> &path,
                  int* shortestSolutionLengthPtr,
                  int depth = 0) {
 
-    std::vector<Move> possibleMoves = getPossibleMoves(bottles, indicesPermutations);
+    std::list<Move> possibleMoves = getPossibleMoves(bottles, indicesPermutations);
 
 //    std::cout << "Setup:" <<std::endl;
 //    printSequence(path);
