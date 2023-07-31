@@ -95,12 +95,13 @@ Color getFirstColorOfBottle(Bottle bottle) {
     return firstColor;
 }
 
-std::list<Move> getPossibleMoves(const std::vector<Bottle> &bottles, const std::vector<Move> &indicesPermutations) {
+std::list<Move> getPossibleMoves(const std::vector<Bottle> &bottles, Move indicesPermutations[]) {
     std::list<Move> possibleMoves;
 
-    for (const Move &movePerm : indicesPermutations) {
-        Bottle from = bottles[movePerm.fromID];
-        Bottle to = bottles[movePerm.toID];
+    // the size of indicesPermutation is nPr(bottlesCount, 2) which is equivalent to bottleCount * (bottleCount-1)
+    for (int i = 0; i < (bottles.size()*(bottles.size()-1)); i++) {
+        Bottle from = bottles[indicesPermutations[i].fromID];
+        Bottle to = bottles[indicesPermutations[i].toID];
 
         Color firstColorOfFromBottle = getFirstColorOfBottle(from);
         Color firstColorOfToBottle = getFirstColorOfBottle(to);
@@ -126,7 +127,7 @@ std::list<Move> getPossibleMoves(const std::vector<Bottle> &bottles, const std::
             continue;
         }
 
-        possibleMoves.push_back(movePerm);
+        possibleMoves.push_back(indicesPermutations[i]);
     }
 
     return possibleMoves;
@@ -185,7 +186,7 @@ depthFirstSearch(const std::vector<Move> &path,
                  const std::vector<Bottle> &bottles,
                  std::vector<std::vector<Move>> *sequencesSeenPtr,
                  std::vector<std::vector<Move>> *solutionsPtr,
-                 const std::vector<Move> &indicesPermutations,
+                 Move indicesPermutations[],
                  int* shortestSolutionLengthPtr,
                  int depth = 0) {
 
@@ -250,7 +251,7 @@ depthFirstSearch(const std::vector<Move> &path,
     return FindResult{};
 }
 
-std::vector<std::vector<Move>> runDepthFirstSearch(std::vector<std::vector<Move>> sequencesSeen, std::vector<Bottle> bottles, std::vector<Move> indicesPermutations) {
+std::vector<std::vector<Move>> runDepthFirstSearch(std::vector<std::vector<Move>> sequencesSeen, std::vector<Bottle> bottles, Move indicesPermutations[]) {
     std::vector<std::vector<Move>> solutions;
 
     int shortestSolutionLength = MAXIMUM_DEPTH;
@@ -290,11 +291,13 @@ int main() {
     // Calculate all permutations bottles size 2 (used for finding possible moves)
     int bottleCount = bottles.size();
 
-    std::vector<Move> indicesPermutations;
+    Move indicesPermutations[bottleCount * (bottleCount-1)];
+    int insertionPoint = 0;
     for (int i = 0; i < bottleCount; i++) {
         for (int j = 0; j < bottleCount; j++) {
             if (i==j) continue;
-            indicesPermutations.push_back(Move{i,j});
+            indicesPermutations[insertionPoint] = (Move{i,j});
+            insertionPoint++;
         }
     }
 
