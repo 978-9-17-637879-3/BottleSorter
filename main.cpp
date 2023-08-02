@@ -112,7 +112,7 @@ getPossibleMoves(const std::vector<Bottle> &bottles, Move indicesPermutations[],
 
         // from bottle is complete or empty; this may need to be removed...
         bool fromBottleCompleteOrEmpty = true;
-        for (int j = 0; j < COLORS_PER_BOTTLE - 1; j++) {
+        for (int j = 0; j < COLORS_PER_BOTTLE; j++) {
             if (from.colors[j] != firstColorOfFromBottle) {
                 fromBottleCompleteOrEmpty = false;
                 break;
