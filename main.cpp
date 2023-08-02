@@ -1,10 +1,12 @@
 #include <bits/stdc++.h>
 #include <vector>
+#include "tree.hpp"
 
 const int COLORS_PER_BOTTLE = 4;
 const bool IS_BALL = true; // if they are balls instead of liquid, the pouring mechanism is different
 const bool FIND_SHORTEST = true;
-const int MAXIMUM_DEPTH = 40;
+const bool SKIP_AFTER_ONE_SHORTEST_SOL = true;
+const int MAXIMUM_DEPTH = 25;
 
 enum Color {
     blank, yellow, green, blue, red, grey, orange, violet, lime, maroon, navy, cyan, black, olive
@@ -15,8 +17,8 @@ struct Bottle {
 };
 
 struct Move {
-    int fromID;
-    int toID;
+    unsigned char fromID;
+    unsigned char toID;
 };
 
 struct FindResult {
@@ -26,7 +28,7 @@ struct FindResult {
 
 void printMoves(const std::vector<Move> &moves) {
     for (const Move &move: moves) {
-        std::cout << move.fromID << " " << move.toID;
+        printf("%u %u", move.fromID, move.toID);
         std::cout << std::endl;
     }
     std::cout << std::endl;
@@ -34,12 +36,12 @@ void printMoves(const std::vector<Move> &moves) {
 
 void printSequence(const std::vector<Move> &moves) {
     if (moves.empty()) return;
-    for (long i = 0; i < moves.size()-1; i++) {
-        std::cout << moves[i].fromID << " " << moves[i].toID;
+    for (long i = 0; i < moves.size() - 1; i++) {
+        printf("%u %u", moves[i].fromID, moves[i].toID);
         std::cout << "->";
     }
-    std::cout << moves.back().fromID << " " << moves.back().toID;
-    std::cout <<  "|end" << std::endl;
+    printf("%u %u", moves.back().fromID, moves.back().toID);
+    std::cout << "|end" << std::endl;
 }
 
 void printBottles(const std::vector<Bottle> &bottles) {
@@ -75,31 +77,31 @@ int getTopColorOfBottleBottomIndex(Bottle bottle) {
 
 int getTopColorOfBottleTopIndex(Bottle bottle) {
     int firstColorIndex = -1;
+
     for (int i = COLORS_PER_BOTTLE - 1; i >= 0; i--) {
         if (bottle.colors[i] != blank) {
             firstColorIndex = i;
             break;
         }
     }
+
     return firstColorIndex;
 }
 
 Color getFirstColorOfBottle(Bottle bottle) {
-    Color firstColor;
-
     int firstColorOfBottleIndex = getTopColorOfBottleBottomIndex(bottle);
-    if (firstColorOfBottleIndex != -1)
-        firstColor = bottle.colors[firstColorOfBottleIndex];
-    else firstColor = blank;
 
-    return firstColor;
+    if (firstColorOfBottleIndex != -1)
+        return bottle.colors[firstColorOfBottleIndex];
+    else
+        return blank;
 }
 
-std::list<Move> getPossibleMoves(const std::vector<Bottle> &bottles, Move indicesPermutations[]) {
-    std::list<Move> possibleMoves;
+std::vector<Move>
+getPossibleMoves(const std::vector<Bottle> &bottles, Move indicesPermutations[], const int &indicesPermutationSize) {
+    std::vector<Move> possibleMoves;
 
-    // the size of indicesPermutation is nPr(bottlesCount, 2) which is equivalent to bottleCount * (bottleCount-1)
-    for (int i = 0; i < (bottles.size()*(bottles.size()-1)); i++) {
+    for (int i = 0; i < indicesPermutationSize; i++) {
         Move possibleMove = indicesPermutations[i];
 
         Bottle from = bottles[possibleMove.fromID];
@@ -110,12 +112,13 @@ std::list<Move> getPossibleMoves(const std::vector<Bottle> &bottles, Move indice
 
         // from bottle is complete or empty; this may need to be removed...
         bool fromBottleCompleteOrEmpty = true;
-        for (int j = 0 ; j < COLORS_PER_BOTTLE-1; j++) {
+        for (int j = 0; j < COLORS_PER_BOTTLE - 1; j++) {
             if (from.colors[j] != firstColorOfFromBottle) {
                 fromBottleCompleteOrEmpty = false;
                 break;
             }
         }
+
         if (fromBottleCompleteOrEmpty)
             continue;
 
@@ -171,7 +174,7 @@ bool gameOver(const std::vector<Bottle> &bottles) {
 
 bool
 sequenceVectorContainsSequence(const std::vector<std::vector<Move>> &sequenceList, const std::vector<Move> &sequence) {
-    for (const std::vector<Move> &s : sequenceList) {
+    for (const std::vector<Move> &s: sequenceList) {
         if (s.size() != sequence.size())
             continue;
         for (long i = 0; i < s.size(); i++) {
@@ -186,13 +189,14 @@ sequenceVectorContainsSequence(const std::vector<std::vector<Move>> &sequenceLis
 FindResult
 depthFirstSearch(const std::vector<Move> &path,
                  const std::vector<Bottle> &bottles,
-                 std::vector<std::vector<Move>> *sequencesSeenPtr,
                  std::vector<std::vector<Move>> *solutionsPtr,
                  Move indicesPermutations[],
-                 int* shortestSolutionLengthPtr,
+                 const int &indicesPermutationsCount,
+                 int *shortestSolutionLengthPtr,
+                 int maxDepth,
                  int depth = 0) {
 
-    std::list<Move> possibleMoves = getPossibleMoves(bottles, indicesPermutations);
+    std::vector<Move> possibleMoves = getPossibleMoves(bottles, indicesPermutations, indicesPermutationsCount);
 
 //    std::cout << "Setup:" <<std::endl;
 //    printSequence(path);
@@ -212,12 +216,12 @@ depthFirstSearch(const std::vector<Move> &path,
             }
         }
         std::vector<Move> newPath = path;
+//        printSequence(newPath);
         if (newPath.size() >= *shortestSolutionLengthPtr) {
             continue;
         }
-            newPath.push_back(newMove);
+        newPath.push_back(newMove);
 
-        sequencesSeenPtr->push_back(newPath);
 //        std::cout << "\x1B[2J\x1B[H";
 //        std::cout << "Unique Sequences Calculated: " << sequencesSeenPtr->size() << std::endl;
         std::vector<Bottle> newBottles = bottles;
@@ -233,9 +237,9 @@ depthFirstSearch(const std::vector<Move> &path,
             }
         }
 
-        while (!result.sequence.has_value() && result.lastMove && depth < MAXIMUM_DEPTH-1) {
-            result = depthFirstSearch(newPath, newBottles, sequencesSeenPtr, solutionsPtr, indicesPermutations,
-                                      shortestSolutionLengthPtr, depth + 1);
+        while (!result.sequence.has_value() && result.lastMove && depth < maxDepth - 1) {
+            result = depthFirstSearch(newPath, newBottles, solutionsPtr, indicesPermutations, indicesPermutationsCount,
+                                      shortestSolutionLengthPtr, maxDepth, depth + 1);
         }
 
         if (result.sequence.has_value()) {
@@ -250,64 +254,30 @@ depthFirstSearch(const std::vector<Move> &path,
     return FindResult{};
 }
 
-std::vector<std::vector<Move>> runDepthFirstSearch(std::vector<std::vector<Move>> sequencesSeen, std::vector<Bottle> bottles, Move indicesPermutations[]) {
+std::vector<std::vector<Move>> runDepthFirstSearch(std::vector<Bottle> bottles, Move indicesPermutations[],
+                                                   const int &indicesPermutationsCount) {
     std::vector<std::vector<Move>> solutions;
 
     int shortestSolutionLength = MAXIMUM_DEPTH;
-    depthFirstSearch(std::vector<Move>{}, bottles, &sequencesSeen, &solutions, indicesPermutations,
-                     &shortestSolutionLength);
+    depthFirstSearch(std::vector<Move>{}, bottles, &solutions, indicesPermutations, indicesPermutationsCount,
+                     &shortestSolutionLength, MAXIMUM_DEPTH);
 
     return solutions;
 }
 
-void breathe(const std::vector<Bottle> &newBottles, Move indicesPermutations[], std::vector<std::vector<Move>> *solutionsPtr, std::vector<std::vector<Move>> *sequencesPtr, const std::vector<Move>& prevSequence = std::vector<Move>{}) {
-    std::list<Move> possibleMoves = getPossibleMoves(newBottles, indicesPermutations);
-
-    for (const Move &possibleMove : possibleMoves) {
-        // backtracked move
-        if (!prevSequence.empty()) {
-            if (prevSequence.back().fromID == possibleMove.toID && prevSequence.back().toID == possibleMove.fromID) {
-                continue; //kill this branch, we're backtracking
-            }
-        }
-        std::vector<Bottle> finalBottles = newBottles;
-        transferLiquid(&finalBottles[possibleMove.fromID], &finalBottles[possibleMove.toID]);
-        std::vector<Move> finalSequence = prevSequence;
-        finalSequence.push_back(possibleMove);
-        if (gameOver(finalBottles)) {
-            solutionsPtr->push_back(finalSequence);
-        }
-//        printSequence(finalSequence);
-        sequencesPtr->push_back(finalSequence);
-    }
-}
-
-std::vector<std::vector<Move>> runBreadthFirstSearch(std::vector<std::vector<Move>> sequencesSeen, std::vector<Bottle> bottles, Move indicesPermutations[]) {
-    std::vector<std::vector<Move>> prevSequences;
+std::vector<std::vector<Move>>
+runIterativeDeepeningDepthFirstSearch(std::vector<Bottle> bottles,
+                                      Move indicesPermutations[],
+                                      const int &indicesPermutationsCount) {
     for (int longestSolutionAllowed = 1; longestSolutionAllowed <= MAXIMUM_DEPTH; longestSolutionAllowed++) {
-        std::vector<std::vector<Move>> sequences;
+        std::cout << "Depth: " << longestSolutionAllowed << std::endl;
+
         std::vector<std::vector<Move>> solutions;
 
-        if (longestSolutionAllowed == 1) {
-            breathe(bottles, indicesPermutations, &solutions, &sequences);
-        } else {
-            std::cout << "Depth: " << longestSolutionAllowed-1;
-            std::cout << ", Exploring " << prevSequences.size() << " branches" << std::endl;
-            for (const std::vector<Move> &prevSequence : prevSequences) {
-                if ((prevSequence[0].fromID == 0 && prevSequence[0].toID == 3) && (prevSequence[1].fromID == 1 && prevSequence[1].toID == 2)) {
-                }
-                // Generate Bottles From Sequence
-                std::vector<Bottle> newBottles = bottles;
-                for (const Move &moveInSequence : prevSequence) {
-                    transferLiquid(&newBottles[moveInSequence.fromID], &newBottles[moveInSequence.toID]);
-                }
-
-                breathe(newBottles, indicesPermutations, &solutions, &sequences, prevSequence);
-            }
-        }
-
-        // https://stackoverflow.com/a/43244008
-        std::swap(prevSequences, sequences);
+        int shortestSolutionLength = MAXIMUM_DEPTH;
+        depthFirstSearch(std::vector<Move>{}, bottles, &solutions, indicesPermutations,
+                         indicesPermutationsCount,
+                         &shortestSolutionLength, longestSolutionAllowed);
 
         if (!solutions.empty()) return solutions;
     }
@@ -315,23 +285,132 @@ std::vector<std::vector<Move>> runBreadthFirstSearch(std::vector<std::vector<Mov
     return std::vector<std::vector<Move>>{};
 }
 
+void walkMoveBranch(Leaf<Move> *moveBranchPtr, const std::vector<Bottle> &bottles, Move indicesPermutations[],
+                    const int &indicesPermutationsCount, std::vector<std::vector<Move>> *solutionsPtr) {
+    if (SKIP_AFTER_ONE_SHORTEST_SOL && !solutionsPtr->empty()) return;
+
+    // if branch is dead, it is not viable to spawn new branches, kill
+//    if (moveBranchPtr->dead) return;
+
+    // continue down tree
+    if (!moveBranchPtr->children.empty()) {
+        for (long i = 0; i < moveBranchPtr->children.size(); i++) {
+            walkMoveBranch(&moveBranchPtr->children[i], bottles, indicesPermutations, indicesPermutationsCount,
+                           solutionsPtr);
+        }
+        return;
+    }
+
+    // reached bottom of tree, generate sequence of our travelled path
+    std::vector<Move> reverseSequence = {};
+    Leaf<Move> *currBranchPtr = moveBranchPtr;
+    while (currBranchPtr->parent != nullptr) {
+        reverseSequence.push_back(currBranchPtr->value);
+        currBranchPtr = currBranchPtr->parent;
+    }
+
+    // Apply sequence to bottles
+    std::vector<Bottle> bottlesAfterSequence = bottles;
+    for (long i = reverseSequence.size() - 1; i >= 0; i--) {
+        transferLiquid(&bottlesAfterSequence[reverseSequence[i].fromID],
+                       &bottlesAfterSequence[reverseSequence[i].toID]);
+    }
+
+    // Breathe
+    std::vector<Move> possibleMoves = getPossibleMoves(bottlesAfterSequence, indicesPermutations,
+                                                       indicesPermutationsCount);
+
+    for (const Move &possibleMove: possibleMoves) {
+        // backtracked move
+        if (reverseSequence.front().fromID == possibleMove.toID &&
+            reverseSequence.front().toID == possibleMove.fromID) {
+//            moveBranchPtr->addDead(possibleMove);
+            continue;
+        }
+        if (IS_BALL) {
+            // verbose move (same ball is moved twice in a row e.g. 0 1 -> 1 2 == 0 2)
+            if (reverseSequence.front().toID == possibleMove.fromID) {
+//                moveBranchPtr->addDead(possibleMove);
+                continue;
+            }
+        }
+
+        // Generate bottles that would occur after this move
+        std::vector<Bottle> finalBottles = bottlesAfterSequence;
+        transferLiquid(&finalBottles[possibleMove.fromID], &finalBottles[possibleMove.toID]);
+
+        if (gameOver(finalBottles)) {
+            std::reverse(reverseSequence.begin(), reverseSequence.end());
+            reverseSequence.push_back(possibleMove);
+            printSequence(reverseSequence);
+            solutionsPtr->push_back(reverseSequence);
+        }
+        moveBranchPtr->addChild(possibleMove);
+//        printSequence(finalSequence);
+//        sequencesPtr->push_back(finalSequence);
+    }
+
+
+}
+
+std::vector<std::vector<Move>> runBreadthFirstSearch(const std::vector<Bottle> &bottles, Move indicesPermutations[],
+                                                     const int &indicesPermutationsCount) {
+    Leaf<Move> moveTree;
+    for (int longestSolutionAllowed = 1; longestSolutionAllowed <= MAXIMUM_DEPTH; longestSolutionAllowed++) {
+        std::cout << "Tree size (method): ";
+        std::cout << moveTree.size() << std::endl;
+        std::cout << "Depth: " << longestSolutionAllowed << std::endl;
+        std::vector<std::vector<Move>> solutions;
+        if (longestSolutionAllowed == 1) {
+            for (const Move &move: getPossibleMoves(bottles, indicesPermutations, indicesPermutationsCount)) {
+                moveTree.addChild(move);
+            }
+        } else {
+            walkMoveBranch(&moveTree, bottles, indicesPermutations, indicesPermutationsCount, &solutions);
+        }
+        if (!solutions.empty())
+            return solutions;
+    }
+    return std::vector<std::vector<Move>>{};
+}
+
 int main() {
     /*
     tubeCount = document.querySelectorAll('rect').length
-    tubeHeight = Number(document.querySelector('#tubeHeight > option:nth-child(2)').text);
+    tubeHeight = Number(document.querySelector('#tubeHeight').value);
     circles = Array.from(document.querySelectorAll('circle'))
-    colors = {ball1: "yellow", ball2: "green", ball3: "blue", ball4: "red", ball5: "grey", ball6: "orange", ball7: "violet", ball8: "lime", ball9: "maroon", ball10: "navy", ball11: "cyan", ball12: "black", ball13: "olive"}
+    colors = {
+        ball1: "yellow",
+        ball2: "green",
+        ball3: "blue",
+        ball4: "red",
+        ball5: "grey",
+        ball6: "orange",
+        ball7: "violet",
+        ball8: "lime",
+        ball9: "maroon",
+        ball10: "navy",
+        ball11: "cyan",
+        ball12: "black",
+        ball13: "olive"
+    }
     lines = []
-		for (let i = 0; i < tubeCount; i++) {
+    for (let i = 0; i < tubeCount; i++) {
         const tubeCircles = circles.filter(circle => circle.id.startsWith(`ball_${i}_`)).reverse()
         const tubeCircleColors = tubeCircles.map(circle => colors[circle.classList[0]])
         while (tubeCircleColors.length < tubeHeight) {
             tubeCircleColors.push("blank");
         }
         console.log(tubeCircleColors)
-        lines.push(`bottles.push_back(Bottle{{${tubeCircleColors[0]}, ${tubeCircleColors[1]}, ${tubeCircleColors[2]}, ${tubeCircleColors[3]}}});`)
+        let line = 'bottles.push_back(Bottle{{'
+        for (let j = 0; j < tubeHeight - 1; j++) {
+            line += tubeCircleColors[j];
+            line += ', ';
+        }
+        line += `${tubeCircleColors[tubeHeight - 1]}}});`;
+        lines.push(line);
     }
-	console.log(lines.join('\n'))
+    console.log(lines.join('\n'));
      */
 
 
@@ -342,22 +421,29 @@ int main() {
     bottles.push_back(Bottle{{yellow, green, blank, blank}});
     bottles.push_back(Bottle{{green, yellow, green, blank}});
 
-    // Calculate all permutations bottles size 2 (used for finding possible moves)
-    int bottleCount = bottles.size();
+    if (bottles.size() > 255) {
+        std::cout << "Bottle count must be <=255" << std::endl;
+        return 0;
+    }
 
-    Move indicesPermutations[bottleCount * (bottleCount-1)];
+    // Calculate all permutations bottles size 2 (used for finding possible moves)
+    unsigned char bottleCount = bottles.size();
+    // the size of indicesPermutation is nPr(bottlesCount, 2) which is equivalent to bottleCount * (bottleCount-1)
+    int indicesPermutationsCount = bottleCount * (bottleCount - 1);
+
+    Move indicesPermutations[indicesPermutationsCount];
     int insertionPoint = 0;
-    for (int i = 0; i < bottleCount; i++) {
-        for (int j = 0; j < bottleCount; j++) {
-            if (i==j) continue;
-            indicesPermutations[insertionPoint] = (Move{i,j});
+    for (unsigned char i = 0; i < bottleCount; i++) {
+        for (unsigned char j = 0; j < bottleCount; j++) {
+            if (i == j) continue;
+            indicesPermutations[insertionPoint] = (Move{i, j});
             insertionPoint++;
         }
     }
 
     // Solve
-    std::vector<std::vector<Move>> sequencesSeen;
-    std::vector<std::vector<Move>> solutions = runBreadthFirstSearch(sequencesSeen, bottles, indicesPermutations);
+    std::vector<std::vector<Move>> solutions = runBreadthFirstSearch(bottles, indicesPermutations,
+                                                                     indicesPermutationsCount);
 
     std::sort(solutions.begin(), solutions.end(), [](const std::vector<Move> &a, const std::vector<Move> &b) {
         return a.size() < b.size();
@@ -365,26 +451,11 @@ int main() {
 
     if (solutions.empty()) {
         std::cout << "NO SOLUTIONS" << std::endl;
-        std::cout << "Explored " << sequencesSeen.size() << " sequences" << std::endl;
         return 0;
     } else {
         std::cout << "BEST SOLUTION FOUND " << std::endl;
         printMoves(solutions.front());
     }
-
-//    if (FIND_SHORTEST) {
-//        while (bestSolution.has_value()) {
-//            solutions.push_back(bestSolution.value());
-//            bestSolution = depthFirstSearch(std::vector<Move>{}, bottles, &sequencesSeen, indicesPermutations, &shortestSolutionLength).sequence;
-//        }
-//
-//        std::sort(solutions.begin(), solutions.end(), [](const std::vector<Move> &a, const std::vector<Move> &b) {
-//            return a.size() < b.size();
-//        });
-//
-//        std::cout << "SHORTEST SOLUTION FOUND " << std::endl;
-//        printMoves(solutions.front());
-//    }
 
 
     return 0;
