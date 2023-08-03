@@ -1,13 +1,13 @@
 const robot = require('robotjs');
 const fs = require('fs');
 
-const startX = 151;
-const gap = 130;
-const bottleCount = 7;
+const startX = 102-64;
+const gap = 64;
+const bottleCount = 15;
 
 const bottleToPx = {}
 for (let i = 0; i < bottleCount; i++) {
-    bottleToPx[i] = {x: startX + i*gap, y: 364};
+    bottleToPx[i] = {x: startX + i*gap, y: 335};
 }
 console.log(bottleToPx)
 
@@ -33,10 +33,10 @@ console.log(sol);
         robot.moveMouse(pxFrom.x, pxFrom.y);
         console.log(pxFrom);
         robot.mouseClick('left', false);
-        await wait(10);
+        await wait(100);
         robot.moveMouse(pxTo.x, pxTo.y);
         console.log(pxTo);
         robot.mouseClick('left', false);
-        await wait(10);
+        await wait(100);
     }
 })()

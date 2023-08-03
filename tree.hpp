@@ -9,15 +9,21 @@ public:
     // Root of tree
     Leaf<_valueType>() = default;
 
+    // Root of tree (with value)
+    Leaf<_valueType>(_valueType value) {
+        this->value = value;
+    }
+
     // Branch of tree
     Leaf<_valueType>(_valueType value, Leaf* parent) {
         this->value = value;
         this->parent = parent;
     }
 
-    void addChild(_valueType childValue) {
+    Leaf<_valueType>* addChild(_valueType childValue) {
         Leaf<_valueType> child = Leaf(childValue, this);
         children.push_back(child);
+        return &children.back();
     }
 
     long size() {
