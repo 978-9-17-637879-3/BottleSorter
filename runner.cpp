@@ -3,9 +3,14 @@
 
 int main() {
     /*
-    tubeCount = document.querySelectorAll('rect').length
+tubeCount = document.querySelectorAll('rect').length
     tubeHeight = Number(document.querySelector('#tubeHeight').value);
-    circles = Array.from(document.querySelectorAll('circle'))
+    circles = Array.from(document.querySelectorAll('circle')).sort((a,b) => {
+		aNumber = Number(a.id.split('_')[1]*10) + Number(a.id.split('_')[2])
+		bNumber = Number(b.id.split('_')[1]*10) + Number(b.id.split('_')[2])
+		return aNumber - bNumber;
+	})
+	console.log(circles)
     colors = {
         ball1: "yellow",
         ball2: "green",
@@ -23,12 +28,11 @@ int main() {
     }
     lines = []
     for (let i = 0; i < tubeCount; i++) {
-        const tubeCircles = circles.filter(circle => circle.id.startsWith(`ball_${i}_`)).reverse()
+        const tubeCircles = circles.filter(circle => circle.id.startsWith(`ball_${i}_`))
         const tubeCircleColors = tubeCircles.map(circle => colors[circle.classList[0]])
         while (tubeCircleColors.length < tubeHeight) {
             tubeCircleColors.push("blank");
         }
-        console.log(tubeCircleColors)
         let line = 'bottles.push_back(Bottle{{'
         for (let j = 0; j < tubeHeight - 1; j++) {
             line += tubeCircleColors[j];
