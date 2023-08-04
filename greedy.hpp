@@ -83,10 +83,6 @@ std::vector<Move> runGreedyBacktracker(const std::vector<Bottle> &startingBottle
             stepCount++;
         }
 
-        if (nodePtr->parent == nullptr) {
-            if (LOG) std::cout << "At root" << std::endl;
-        }
-
         std::vector<MoveBottlesScore> goodMoveBottleScores;
         std::vector<Move> possibleMoves = getPossibleMoves(nodePtr->value.game.bottles, indicesPermutations,
                                                            indicesPermutationsCount);
@@ -103,7 +99,6 @@ std::vector<Move> runGreedyBacktracker(const std::vector<Bottle> &startingBottle
 
         if (goodMoveBottleScores.empty()) {
             deadGames.push_back(nodePtr->value.game);
-            std::cout << "No possible moves at this stage, Backtracking" << std::endl;
             nodePtr = nodePtr->parent;
             continue;
         }
@@ -127,9 +122,6 @@ std::vector<Move> runGreedyBacktracker(const std::vector<Bottle> &startingBottle
 
             if (stateExists) {
                 if (goodMoveBottleScores.size() == 1) {
-                    if (LOG) {
-                        std::cout << nodePtr->value.score << std::endl;
-                    }
                     newNodePtr = nodePtr->parent;
                     shouldBacktrack = true;
                     break;
@@ -148,13 +140,6 @@ std::vector<Move> runGreedyBacktracker(const std::vector<Bottle> &startingBottle
         }
 
         deadGames.push_back(nodePtr->value.game);
-        if (LOG) {
-            if (nodePtr->value.score > highScore) {
-                std::cout << "High score " << highScore << " -> " << nodePtr->value.score << std::endl;
-                highScore = nodePtr->value.score;
-            }
-        }
-
     }
 
     std::vector<Move> reverseSequence = {};
