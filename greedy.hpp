@@ -91,6 +91,9 @@ std::vector<Move> runGreedyBacktracker(const std::vector<Bottle> &startingBottle
         std::vector<Move> possibleMoves = getPossibleMoves(nodePtr->value.game.bottles, indicesPermutations,
                                                            indicesPermutationsCount);
         for (const Move &possibleMove: possibleMoves) {
+            if (IS_BALL && possibleMove.fromID == nodePtr->value.move.toID) {
+                continue;
+            }
             std::vector<Bottle> newBottles = nodePtr->value.game.bottles;
             transferLiquid(&newBottles[possibleMove.fromID], &newBottles[possibleMove.toID]);
             const MoveBottlesScore &possibleMoveBottlesScore = MoveBottlesScore{possibleMove, newBottles,
