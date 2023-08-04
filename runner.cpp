@@ -87,10 +87,10 @@ tubeCount = document.querySelectorAll('rect').length
     const std::vector<Move> &solution = runGreedyBacktracker(bottles, indicesPermutations, indicesPermutationsCount);
     auto stop = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
-    if (LOG) std::cout << duration.count() << std::endl;
+    std::cout << duration.count() << "ms" << std::endl;
     std::cout << "SOLUTION FOUND " << std::endl;
     printSequence(solution);
-    if (LOG) std::cout << solution.size() << " moves" << std::endl;
+    std::cout << solution.size() << " moves" << std::endl;
 
 
     return 0;
