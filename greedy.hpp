@@ -5,52 +5,49 @@ long scoreGame(const std::vector<Bottle> &bottles) {
     long score = 0;
     bool gameFinished = true;
     for (const Bottle &bottle: bottles) {
+        long bottomStreak = 0;
         bool bottleComplete = true;
-
-        std::map<Color, bool> colorSeenMap;
+        std::map<Color, int> colorCountMap;
+        long streak = 1;
         for (const Color &color: bottle.colors) {
-            colorSeenMap[color] = true;
-            if (color != bottle.colors[0]) {
-                bottleComplete = false;
+            colorCountMap[color] =
+                    colorCountMap.count(color) == 0 ?
+                    1
+                                                    :
+                    colorCountMap[color] + 1;
+        }
+
+        if (bottle.colors[0] != blank) {
+            for (int i = 1; i < COLORS_PER_BOTTLE; i++) {
+                if (bottle.colors[i] == bottle.colors[i - 1]) {
+                    streak++;
+                    if (streak > bottomStreak) {
+                        bottomStreak = streak;
+                    }
+                } else {
+                    break;
+                }
             }
         }
-        // dock points for a lot of different colors in one bottle
-        score -= colorSeenMap.size();
 
-        // if bottle is all the same
-        if (bottleComplete) {
-            // but not clear, give bonus
-            if (bottle.colors[0] != blank)
-                score += 10000;
-        } else {
-            // bottle is not all the same, so the game is not finished
+        if (colorCountMap.begin()->second != 4) {
+            bottleComplete = false;
             gameFinished = false;
         }
 
-        int highestColorStreak = 0;
-        int bottomIdxOfHighestColorStreak = -1;
-        int streak = 1;
-        for (int i = 1; i < COLORS_PER_BOTTLE; i++) {
-            if (bottle.colors[i] == bottleComplete) {
-                streak++;
-                if (streak > highestColorStreak) {
-                    highestColorStreak = streak;
-                    bottomIdxOfHighestColorStreak = i - streak;
-                }
-            } else {
-                streak = 1;
-            }
+        for (const std::pair<const Color, int> &colorCount: colorCountMap) {
+            score -= colorCount.second;
         }
-
-        if (streak > 1)
-            score += highestColorStreak * 100 * (COLORS_PER_BOTTLE - bottomIdxOfHighestColorStreak);
+        score += bottomStreak * 6;
+        if (bottle.colors[0] != blank && bottleComplete) {
+            score += 10;
+        }
     }
-    if (gameFinished)
-        score += 1000000;
 
+    if (gameFinished)
+        return 1000000;
     return score;
 }
-
 
 struct Game {
     std::vector<Bottle> bottles;
