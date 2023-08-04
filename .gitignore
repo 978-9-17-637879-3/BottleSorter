@@ -1,4 +1,10 @@
+# Built Executable
 main
+# Libraries for solution applier
 node_modules/
+# Game
 ballaballa/
+# Text file to hold solution for solution applier
 sol.txt
+# IDE Files
+.idea/
