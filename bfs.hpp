@@ -3,8 +3,8 @@
 
 void walkMoveBranchBreadthFirst(Leaf<Move> *moveBranchPtr, const std::vector<Bottle> &bottles,
                                 Move indicesPermutations[],
-                                const int &indicesPermutationsCount, std::vector<std::vector<Move>> *solutionsPtr) {
-    if (SKIP_AFTER_ONE_SHORTEST_SOL && !solutionsPtr->empty()) return;
+                                const int &indicesPermutationsCount, std::vector<std::vector<Move>> &solutions) {
+    if (SKIP_AFTER_ONE_SHORTEST_SOL && !solutions.empty()) return;
 
     // if branch is dead, it is not viable to spawn new branches, kill
 //    if (moveBranchPtr->dead) return;
@@ -14,7 +14,7 @@ void walkMoveBranchBreadthFirst(Leaf<Move> *moveBranchPtr, const std::vector<Bot
         for (long i = 0; i < moveBranchPtr->children.size(); i++) {
             walkMoveBranchBreadthFirst(&moveBranchPtr->children[i], bottles, indicesPermutations,
                                        indicesPermutationsCount,
-                                       solutionsPtr);
+                                       solutions);
         }
         return;
     }
@@ -61,7 +61,7 @@ void walkMoveBranchBreadthFirst(Leaf<Move> *moveBranchPtr, const std::vector<Bot
             std::reverse(reverseSequence.begin(), reverseSequence.end());
             reverseSequence.push_back(possibleMove);
             printSequence(reverseSequence);
-            solutionsPtr->push_back(reverseSequence);
+            solutions.push_back(reverseSequence);
         }
         moveBranchPtr->addChild(possibleMove);
 //        printSequence(finalSequence);
@@ -84,7 +84,7 @@ std::vector<std::vector<Move>> runBreadthFirstSearch(const std::vector<Bottle> &
                 moveTree.addChild(move);
             }
         } else {
-            walkMoveBranchBreadthFirst(&moveTree, bottles, indicesPermutations, indicesPermutationsCount, &solutions);
+            walkMoveBranchBreadthFirst(&moveTree, bottles, indicesPermutations, indicesPermutationsCount, solutions);
         }
         if (!solutions.empty())
             return solutions;

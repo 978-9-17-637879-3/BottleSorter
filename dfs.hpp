@@ -9,10 +9,10 @@ struct FindResult {
 FindResult
 depthFirstSearch(const std::vector<Move> &path,
                  const std::vector<Bottle> &bottles,
-                 std::vector<std::vector<Move>> *solutionsPtr,
+                 std::vector<std::vector<Move>> &solutions,
                  Move indicesPermutations[],
                  const int &indicesPermutationsCount,
-                 int *shortestSolutionLengthPtr,
+                 int &shortestSolutionLength,
                  int maxDepth,
                  int depth = 0) {
 
@@ -37,7 +37,7 @@ depthFirstSearch(const std::vector<Move> &path,
         }
         std::vector<Move> newPath = path;
 //        printSequence(newPath);
-        if (newPath.size() >= *shortestSolutionLengthPtr) {
+        if (newPath.size() >= shortestSolutionLength) {
             continue;
         }
         newPath.push_back(newMove);
@@ -52,19 +52,19 @@ depthFirstSearch(const std::vector<Move> &path,
 
         if (gameOver(newBottles)) {
             result.sequence = newPath;
-            if (result.sequence.value().size() < *shortestSolutionLengthPtr) {
-                *shortestSolutionLengthPtr = newPath.size();
+            if (result.sequence.value().size() < shortestSolutionLength) {
+                shortestSolutionLength = newPath.size();
             }
         }
 
         while (!result.sequence.has_value() && result.lastMove && depth < maxDepth - 1) {
-            result = depthFirstSearch(newPath, newBottles, solutionsPtr, indicesPermutations, indicesPermutationsCount,
-                                      shortestSolutionLengthPtr, maxDepth, depth + 1);
+            result = depthFirstSearch(newPath, newBottles, solutions, indicesPermutations, indicesPermutationsCount,
+                                      shortestSolutionLength, maxDepth, depth + 1);
         }
 
         if (result.sequence.has_value()) {
             if (depth > 0)
-                solutionsPtr->push_back(result.sequence.value());
+                solutions.push_back(result.sequence.value());
             else {
                 continue;
             }
@@ -79,8 +79,8 @@ std::vector<std::vector<Move>> runDepthFirstSearch(std::vector<Bottle> bottles, 
     std::vector<std::vector<Move>> solutions;
 
     int shortestSolutionLength = MAXIMUM_DEPTH;
-    depthFirstSearch(std::vector<Move>{}, bottles, &solutions, indicesPermutations, indicesPermutationsCount,
-                     &shortestSolutionLength, MAXIMUM_DEPTH);
+    depthFirstSearch(std::vector<Move>{}, bottles, solutions, indicesPermutations, indicesPermutationsCount,
+                     shortestSolutionLength, MAXIMUM_DEPTH);
 
     return solutions;
 }
@@ -95,9 +95,9 @@ runIterativeDeepeningDepthFirstSearch(std::vector<Bottle> bottles,
         std::vector<std::vector<Move>> solutions;
 
         int shortestSolutionLength = MAXIMUM_DEPTH;
-        depthFirstSearch(std::vector<Move>{}, bottles, &solutions, indicesPermutations,
+        depthFirstSearch(std::vector<Move>{}, bottles, solutions, indicesPermutations,
                          indicesPermutationsCount,
-                         &shortestSolutionLength, longestSolutionAllowed);
+                         shortestSolutionLength, longestSolutionAllowed);
 
         if (!solutions.empty()) return solutions;
     }
