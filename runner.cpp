@@ -46,21 +46,21 @@ tubeCount = document.querySelectorAll('rect').length
 
 
     std::vector<Bottle> bottles;
-    bottles.push_back(Bottle{{green, green, black, lime}});
-    bottles.push_back(Bottle{{red, red, grey, maroon}});
-    bottles.push_back(Bottle{{lime, lime, olive, navy}});
-    bottles.push_back(Bottle{{green, orange, navy, maroon}});
-    bottles.push_back(Bottle{{navy, yellow, black, yellow}});
+    bottles.push_back(Bottle{{grey, grey, cyan, lime}});
+    bottles.push_back(Bottle{{cyan, yellow, green, red}});
+    bottles.push_back(Bottle{{orange, orange, grey, lime}});
     bottles.push_back(Bottle{{blank, blank, blank, blank}});
     bottles.push_back(Bottle{{blank, blank, blank, blank}});
-    bottles.push_back(Bottle{{maroon, maroon, orange, olive}});
-    bottles.push_back(Bottle{{yellow, cyan, violet, grey}});
-    bottles.push_back(Bottle{{blue, blue, red, green}});
-    bottles.push_back(Bottle{{orange, yellow, navy, violet}});
-    bottles.push_back(Bottle{{violet, olive, orange, violet}});
-    bottles.push_back(Bottle{{blue, red, lime, blue}});
-    bottles.push_back(Bottle{{grey, black, cyan, black}});
-    bottles.push_back(Bottle{{olive, cyan, grey, cyan}});
+    bottles.push_back(Bottle{{yellow, green, green, green}});
+    bottles.push_back(Bottle{{blue, maroon, maroon, orange}});
+    bottles.push_back(Bottle{{violet, cyan, navy, maroon}});
+    bottles.push_back(Bottle{{black, black, red, yellow}});
+    bottles.push_back(Bottle{{navy, navy, lime, black}});
+    bottles.push_back(Bottle{{blue, blue, violet, cyan}});
+    bottles.push_back(Bottle{{olive, red, olive, navy}});
+    bottles.push_back(Bottle{{lime, violet, red, yellow}});
+    bottles.push_back(Bottle{{olive, olive, violet, blue}});
+    bottles.push_back(Bottle{{maroon, black, grey, orange}});
 
     if (bottles.size() > 255) {
         std::cout << "Bottle count must be <=255" << std::endl;
