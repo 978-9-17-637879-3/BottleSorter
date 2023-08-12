@@ -1,7 +1,7 @@
 #include "shared.hpp"
 #include "tree.hpp"
 
-void walkMoveBranchBreadthFirst(Leaf<Move> *moveBranchPtr, const std::vector<Bottle> &bottles,
+void walkMoveBranchBreadthFirst(Tree<Move> *moveBranchPtr, const std::vector<Bottle> &bottles,
                                 Move indicesPermutations[],
                                 const int &indicesPermutationsCount, std::vector<std::vector<Move>> &solutions) {
     if (SKIP_AFTER_ONE_SHORTEST_SOL && !solutions.empty()) return;
@@ -21,7 +21,7 @@ void walkMoveBranchBreadthFirst(Leaf<Move> *moveBranchPtr, const std::vector<Bot
 
     // reached bottom of tree, generate sequence of our travelled path
     std::vector<Move> reverseSequence = {};
-    Leaf<Move> *currBranchPtr = moveBranchPtr;
+    Tree<Move> *currBranchPtr = moveBranchPtr;
     while (currBranchPtr->parent != nullptr) {
         reverseSequence.push_back(currBranchPtr->value);
         currBranchPtr = currBranchPtr->parent;
@@ -73,7 +73,7 @@ void walkMoveBranchBreadthFirst(Leaf<Move> *moveBranchPtr, const std::vector<Bot
 
 std::vector<std::vector<Move>> runBreadthFirstSearch(const std::vector<Bottle> &bottles, Move indicesPermutations[],
                                                      const int &indicesPermutationsCount) {
-    Leaf<Move> moveTree;
+    Tree<Move> moveTree;
     for (int longestSolutionAllowed = 1; longestSolutionAllowed <= MAXIMUM_DEPTH; longestSolutionAllowed++) {
         std::cout << "Tree size (method): ";
         std::cout << moveTree.size() << std::endl;

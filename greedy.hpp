@@ -72,8 +72,8 @@ struct MoveBottlesScore {
 std::vector<Move> runGreedyBacktracker(const std::vector<Bottle> &startingBottles, Move indicesPermutations[],
                                        const int &indicesPermutationsCount) {
     // initialize tree
-    Leaf<MoveBottlesScore> root = Leaf<MoveBottlesScore>(MoveBottlesScore{Move{-1, -1}, Game{startingBottles}, 0});
-    Leaf<MoveBottlesScore> *nodePtr = &root;
+    Tree<MoveBottlesScore> root = Tree<MoveBottlesScore>(MoveBottlesScore{Move{-1, -1}, Game{startingBottles}, 0});
+    Tree<MoveBottlesScore> *nodePtr = &root;
     // initialize list of pointers to bad nodes, this will be used for backtracking;
     std::vector<Game> deadGames;
     long highScore = 0;
@@ -108,7 +108,7 @@ std::vector<Move> runGreedyBacktracker(const std::vector<Bottle> &startingBottle
                       return a.score < b.score;
                   });
 
-        Leaf<MoveBottlesScore> *newNodePtr = nullptr;
+        Tree<MoveBottlesScore> *newNodePtr = nullptr;
 
         bool shouldBacktrack = false;
         for (int i = goodMoveBottleScores.size() - 1; i >= 0; i--) {
@@ -143,7 +143,7 @@ std::vector<Move> runGreedyBacktracker(const std::vector<Bottle> &startingBottle
     }
 
     std::vector<Move> reverseSequence = {};
-    Leaf<MoveBottlesScore> *currBranchPtr = nodePtr;
+    Tree<MoveBottlesScore> *currBranchPtr = nodePtr;
     while (currBranchPtr->parent != nullptr) {
         reverseSequence.push_back(currBranchPtr->value.move);
         currBranchPtr = currBranchPtr->parent;

@@ -1,27 +1,27 @@
 #include <bits/stdc++.h>
 
-template<typename _valueType> class Leaf {
+template<typename _valueType> class Tree {
 public:
     _valueType value;
-    Leaf* parent = nullptr;
-    std::vector<Leaf<_valueType>> children;
+    Tree* parent = nullptr;
+    std::vector<Tree<_valueType>> children;
 
     // Root of tree
-    Leaf<_valueType>() = default;
+    Tree<_valueType>() = default;
 
     // Root of tree (with value)
-    Leaf<_valueType>(_valueType value) {
+    Tree<_valueType>(_valueType value) {
         this->value = value;
     }
 
     // Branch of tree
-    Leaf<_valueType>(_valueType value, Leaf* parent) {
+    Tree<_valueType>(_valueType value, Tree* parent) {
         this->value = value;
         this->parent = parent;
     }
 
-    Leaf<_valueType>* addChild(_valueType childValue) {
-        Leaf<_valueType> child = Leaf(childValue, this);
+    Tree<_valueType>* addChild(_valueType childValue) {
+        Tree<_valueType> child = Tree(childValue, this);
         children.push_back(child);
         return &children.back();
     }
