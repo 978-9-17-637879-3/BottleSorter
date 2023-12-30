@@ -1,13 +1,11 @@
 #include "shared.hpp"
 #include "tree.hpp"
+#include <algorithm>
 
 void walkMoveBranchBreadthFirst(Tree<Move> *moveBranchPtr, const std::vector<Bottle> &bottles,
                                 Move indicesPermutations[],
                                 const int &indicesPermutationsCount, std::vector<std::vector<Move>> &solutions) {
     if (SKIP_AFTER_ONE_SHORTEST_SOL && !solutions.empty()) return;
-
-    // if branch is dead, it is not viable to spawn new branches, kill
-//    if (moveBranchPtr->dead) return;
 
     // continue down tree
     if (!moveBranchPtr->children.empty()) {
@@ -42,13 +40,11 @@ void walkMoveBranchBreadthFirst(Tree<Move> *moveBranchPtr, const std::vector<Bot
         // backtracked move
         if (reverseSequence.front().fromID == possibleMove.toID &&
             reverseSequence.front().toID == possibleMove.fromID) {
-//            moveBranchPtr->addDead(possibleMove);
             continue;
         }
         if (IS_BALL) {
             // verbose move (same ball is moved twice in a row e.g. 0 1 -> 1 2 == 0 2)
             if (reverseSequence.front().toID == possibleMove.fromID) {
-//                moveBranchPtr->addDead(possibleMove);
                 continue;
             }
         }
@@ -64,8 +60,6 @@ void walkMoveBranchBreadthFirst(Tree<Move> *moveBranchPtr, const std::vector<Bot
             solutions.push_back(reverseSequence);
         }
         moveBranchPtr->addChild(possibleMove);
-//        printSequence(finalSequence);
-//        sequencesPtr->push_back(finalSequence);
     }
 
 

@@ -1,5 +1,5 @@
-#include <bits/stdc++.h>
 #include "shared.hpp"
+#include <optional>
 
 struct FindResult {
     std::optional<std::vector<Move>> sequence;
@@ -18,10 +18,6 @@ depthFirstSearch(const std::vector<Move> &path,
 
     std::vector<Move> possibleMoves = getPossibleMoves(bottles, indicesPermutations, indicesPermutationsCount);
 
-//    std::cout << "Setup:" <<std::endl;
-//    printSequence(path);
-//    printBottles(bottles);
-//    printMoves(possibleMoves);
     for (const Move &newMove: possibleMoves) {
         if (!path.empty()) {
             // duplicate move
@@ -36,14 +32,11 @@ depthFirstSearch(const std::vector<Move> &path,
             }
         }
         std::vector<Move> newPath = path;
-//        printSequence(newPath);
         if (newPath.size() >= shortestSolutionLength) {
             continue;
         }
         newPath.push_back(newMove);
 
-//        std::cout << "\x1B[2J\x1B[H";
-//        std::cout << "Unique Sequences Calculated: " << sequencesSeenPtr->size() << std::endl;
         std::vector<Bottle> newBottles = bottles;
         transferLiquid(&newBottles[newPath.back().fromID], &newBottles[newPath.back().toID]);
 

@@ -1,5 +1,7 @@
 #include "shared.hpp"
 #include "tree.hpp"
+#include <map>
+#include <algorithm>
 
 long scoreGame(const std::vector<Bottle> &bottles) {
     long score = 0;

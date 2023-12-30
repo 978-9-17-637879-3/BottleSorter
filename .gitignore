@@ -8,3 +8,5 @@ ballaballa/
 sol.txt
 # IDE Files
 .idea/
+cmake-build-debug/
+CMakeLists.txt

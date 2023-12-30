@@ -1,4 +1,5 @@
-#include <bits/stdc++.h>
+#pragma once
+#include <vector>
 
 template<typename _valueType> class Tree {
 public:

@@ -1,4 +1,6 @@
-#include <bits/stdc++.h>
+#pragma once
+#include <vector>
+#include <iostream>
 
 const int COLORS_PER_BOTTLE = 4;
 const bool IS_BALL = true; // if they are balls instead of liquid, the pouring mechanism is different
